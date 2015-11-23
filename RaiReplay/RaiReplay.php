@@ -59,18 +59,19 @@ function createPlayItem($res, $title, $desc, $album_art, $class, $protocolInfo) 
 }
 
 function main_menu() {
-	$channels = array("RaiUno", "RaiDue", "RaiTre", "RaiCinque", "RaiPremium", "RaiGulp", "RaiYoyo");
-	$logos = array(
-		"https://upload.wikimedia.org/wikipedia/it/thumb/7/73/Logo_Rai_1_2010.svg/240px-Logo_Rai_1_2010.svg.png",
-		"https://upload.wikimedia.org/wikipedia/it/thumb/8/83/Logo_Rai_2_2010.svg/240px-Logo_Rai_2_2010.svg.png",
-		"https://upload.wikimedia.org/wikipedia/it/thumb/5/5c/Logo_Rai_3_2010.svg/240px-Logo_Rai_3_2010.svg.png",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Rai_5_logo.svg/240px-Rai_5_logo.svg.png",
-		"https://upload.wikimedia.org/wikipedia/it/thumb/6/61/RAI_Premium_2010_Logo.svg/240px-RAI_Premium_2010_Logo.svg.png",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Rai_Gulp_2010.svg/240px-Rai_Gulp_2010.svg.png",
-		"https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/RAI_YoYo_2010_Logo.svg/240px-RAI_YoYo_2010_Logo.svg.png",
-	);
 	_logDebug('main menu');
 	$items = array();
+	$channels = array("RaiUno", "RaiDue", "RaiTre", "RaiCinque", "RaiPremium", "RaiGulp", "RaiYoyo");
+	$logos = array(
+		"http://www.rai.tv/dl/replaytv/images/logo_raiuno.png",
+		"http://www.rai.tv/dl/replaytv/images/logo_raidue.png",
+		"http://www.rai.tv/dl/replaytv/images/logo_raitre.png",
+		"http://www.rai.tv/dl/replaytv/images/logo_raicinque.png",
+		"http://img.ctrlv.in/img/15/11/23/56530eba364e3.png",
+		"http://img.ctrlv.in/img/15/11/23/56530e9a21fb6.png",
+		"http://img.ctrlv.in/img/15/11/23/56530ecf81af6.png",
+	);
+
 	for ($i = 0; $i < count($channels); $i++) {
 		$items[] = array(
 			'id' => build_umsp_url('channel', array($channels[$i])),
@@ -131,6 +132,7 @@ function day($id) {
 				_logDebug('url not found.');
 				continue;
 			}
+
 			if (preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['urlSmartPhone'], $m)) {
 				if ($m[1] != $ids) {
 					_logDebug('vid_id[sf]: ' . $m[1]);
@@ -138,8 +140,8 @@ function day($id) {
 				} else {
 					_logDebug('no vid_id[sf]');
 				}
-
 			}
+
 			$items[] = createPlayItem(
 				build_server_url(array('video' => $ids)),
 				clean_title($k . ' - ' . $v['t']),
@@ -156,7 +158,9 @@ function config($key = null, $value = null) {
 	if ($key != null) {
 		putConfigValue($key, $value);
 	}
+
 	$prefer_hd = getConfigValue('PREFER_HD', 1);
+
 	$Items[] = array(
 		'id' => build_umsp_url('config', array('PREFER_HD', !$prefer_hd)),
 		'dc:title' => 'HD ' . ($prefer_hd ? 'on' : 'off') . ' - Seleziona per ' . ($prefer_hd ? 'disattivarlo' : 'attivarlo'),
@@ -190,6 +194,7 @@ if (isset($_GET['video'])) {
 	_logDebug("video: " . $_GET['video']);
 	$url = '';
 	$ids = explode('@', $_GET['video']);
+
 	foreach ($ids as $k => $v) {
 		_logDebug("test $k > $v");
 		$h = get_headers($prefix . $v, 1);

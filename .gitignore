@@ -45,3 +45,6 @@ Temporary Items
 ftpsync.settings
 .gitignore
 .gitattributes
+*.png
+*.jpg
+la7/x2scrap.txt
