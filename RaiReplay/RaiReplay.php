@@ -116,9 +116,8 @@ function day($id) {
 
 	foreach (array_pop($jd) as $dy => $arr) {
 		foreach ($arr as $k => $v) {
-
 			$phd = getConfigValue('PREFER_HD', 1);
-
+			$ids = '';
 			if ($phd && preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['h264_1800'], $m)) {
 				_logDebug('vid_id[1800]: ' . $m[1]);
 				$ids = $m[1];
@@ -126,22 +125,25 @@ function day($id) {
 				_logDebug('vid_id[800]: ' . $m[1]);
 				$ids = $m[1];
 			} elseif (preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['h264'], $m)) {
-				_logDebug('vid_id: ' . $m[1]);
+				_logDebug('vid_id[h264]: ' . $m[1]);
+				$ids = $m[1];
+			} elseif (preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['urlTablet'], $m)) {
+				_logDebug('vid_id[urlTablet]: ' . $m[1]);
 				$ids = $m[1];
 			} else {
 				_logDebug('url not found.');
 				continue;
 			}
 
-			if (preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['urlSmartPhone'], $m)) {
+			if (preg_match('@relinkerServlet\.htm\?cont=(.+)$@', $v['r'], $m)) {
 				if ($m[1] != $ids) {
-					_logDebug('vid_id[sf]: ' . $m[1]);
+					_logDebug('vid_id[r]: ' . $m[1]);
 					$ids = $ids . '@' . $m[1];
 				} else {
-					_logDebug('no vid_id[sf]');
+					_logDebug('vid[r] not needed.');
 				}
 			}
-
+			$v['image'] = preg_match('@^http:\/\/@', trim($v['image'])) ? trim($v['image']) : "http://" . trim($v['image']);
 			$items[] = createPlayItem(
 				build_server_url(array('video' => $ids)),
 				clean_title($k . ' - ' . $v['t']),
@@ -189,29 +191,48 @@ function putConfigValue($key, $value) {
 	exec("sudo config_tool -c RAIREPLAY_$key='$value' >/dev/null 2>&1");
 }
 
-if (isset($_GET['video'])) {
+function getLink($id) {
+	$phd = getConfigValue('PREFER_HD', 1);
 	$prefix = 'http://mediapolisvod.rai.it/relinker/relinkerServlet.htm?cont=';
+	$url = $prefix . $id;
+	$h = get_headers($url, 1);
+	_logDebug("test: $url > " . $h[0]);
+	if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+		$f = file_get_contents($url);
+		if (preg_match('@replaytv\/(.+?\/\d{4,8})\/@', $f, $m)) {
+			for ($i = 1; $i <= 2; $i++) {
+				$u = "http://creativemedia$i.rai.it/Italy/podcastmhp/replaytv/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
+				$h = get_headers($u);
+				_logDebug("test: $u > " . $h[0]);
+				if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+					return $u;
+				}
+			}
+		}
+	} elseif (preg_match('@HTTP\/1\.[01] *302@', $h[0])) {
+		_logDebug("direct mp4?");
+		if (preg_match('@\.mp4$@', $h['Location'])) {
+			$u = $h['Location'];
+			$h = get_headers($u);
+			_logDebug("test: $u > " . $h[0]);
+			if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+				return $u;
+			}
+		} else {
+			_logDebug("*** UNSUPPORTED ***\r\n" . $h['Location']);
+		}
+	}
+	return null;
+}
+
+if (isset($_GET['video'])) {
 	_logDebug("video: " . $_GET['video']);
 	$url = '';
 	$ids = explode('@', $_GET['video']);
 
-	foreach ($ids as $k => $v) {
-		_logDebug("test $k > $v");
-		$h = get_headers($prefix . $v, 1);
-		$url = $h['Location'];
-		_logDebug('video: ' . $url);
-		$h = get_headers($url, 1);
-		if (($h[0] == 'HTTP/1.0 200 OK') && preg_match('@master\.m3u8@', $url)) {
-			_logDebug('creating url from: ' . $url);
-			$phd = getConfigValue('PREFER_HD', 1);
-			if (preg_match('@creativemedia(\d)-.+\/i\/(.+?),\d@', $url, $m)) {
-				$url = 'http://creativemedia' . $m[1] . '.rai.it/' . $m[2] . ($phd ? '1800' : '800') . '.mp4';
-				break;
-			}
-			_logDebug('url found: ' . $url);
-			break;
-		} elseif ($h[0] == 'HTTP/1.0 200 OK') {
-			_logDebug('url found: ' . $url);
+	foreach ($ids as $id) {
+		$url = getLink($id);
+		if ($url) {
 			break;
 		}
 	}

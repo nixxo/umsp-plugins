@@ -3,8 +3,8 @@
 # meta-name="Rai Replay"
 # meta-desc="Rivedi la programmazione dell'ultima settimana dei canali Rai direttamente dal tuo WDTV."
 # meta-author="nixxo"
-# meta-date="2015-11-24"
-# meta-version="0.2"
+# meta-date="2015-11-28"
+# meta-version="0.3"
 # meta-type="umsp"
 # meta-url="http://forum.wdlxtv.com/viewtopic.php?f=53&t=9305"
 # meta-filename="RaiReplay.php"
@@ -20,8 +20,8 @@ $pluginInfo = array(
 	'name' => 'Rai Replay',
 	'desc' => 'Rivedi la programmazione dell\'ultima settimana dei canali Rai direttamente dal tuo WDTV.',
 	'author' => 'nixxo',
-	'date' => '2015-11-24',
-	'version' => '0.2',
+	'date' => '2015-11-28',
+	'version' => '0.3',
 	'url' => 'http://forum.wdlxtv.com/viewtopic.php?f=53&t=9305',
 	'id' => 'RaiReplay',
 	'thumb' => 'http://s10.postimg.org/kuctk1995/rai_tv.jpg',
