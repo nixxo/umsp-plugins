@@ -191,24 +191,31 @@ function putConfigValue($key, $value) {
 	exec("sudo config_tool -c RAIREPLAY_$key='$value' >/dev/null 2>&1");
 }
 
-function getLink($id) {
+function createLink($url) {
+	_logDebug("creating link from: $url");
 	$phd = getConfigValue('PREFER_HD', 1);
+	if (preg_match('@replaytv\/(.+?\/\d{4,8})[\/_]@', $url, $m)) {
+		for ($i = 1; $i <= 4; $i++) {
+			$u = "http://creativemedia$i.rai.it/Italy/podcastmhp/replaytv/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
+			$h = get_headers($u);
+			_logDebug("test: $u > " . $h[0]);
+			if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+				return $u;
+			}
+		}
+	} else {
+		_logDebug("***********\r\n UNSUPPORTED LINK: $url\r\n***********");
+	}
+	return null;
+}
+
+function getLink($id) {
 	$prefix = 'http://mediapolisvod.rai.it/relinker/relinkerServlet.htm?cont=';
 	$url = $prefix . $id;
 	$h = get_headers($url, 1);
 	_logDebug("test: $url > " . $h[0]);
 	if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
-		$f = file_get_contents($url);
-		if (preg_match('@replaytv\/(.+?\/\d{4,8})\/@', $f, $m)) {
-			for ($i = 1; $i <= 2; $i++) {
-				$u = "http://creativemedia$i.rai.it/Italy/podcastmhp/replaytv/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
-				$h = get_headers($u);
-				_logDebug("test: $u > " . $h[0]);
-				if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
-					return $u;
-				}
-			}
-		}
+		return createLink(file_get_contents($url));
 	} elseif (preg_match('@HTTP\/1\.[01] *302@', $h[0])) {
 		_logDebug("direct mp4?");
 		if (preg_match('@\.mp4$@', $h['Location'])) {
@@ -219,7 +226,7 @@ function getLink($id) {
 				return $u;
 			}
 		} else {
-			_logDebug("*** UNSUPPORTED ***\r\n" . $h['Location']);
+			return createLink($h['Location']);
 		}
 	}
 	return null;
