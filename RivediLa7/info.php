@@ -17,13 +17,13 @@
 global $pluginInfo;
 
 $pluginInfo = array(
-	'name' => 'Rai Replay',
+	'name' => 'RivediLa7',
 	'desc' => 'Rivedi la programmazione dell\'ultima settimana di La7 direttamente dal tuo WDTV.',
 	'author' => 'nixxo',
 	'date' => '2015-12-02',
 	'version' => '0.1',
 	'url' => 'http://forum.wdlxtv.com/viewtopic.php?f=53&t=9310',
-	'id' => 'RaiReplay',
+	'id' => 'RivediLa7',
 	'thumb' => 'http://s1.postimg.org/5zaz6vc7j/LA7_logo.png',
 	'art' => 'http://s1.postimg.org/5zaz6vc7j/LA7_logo.png',
 );
