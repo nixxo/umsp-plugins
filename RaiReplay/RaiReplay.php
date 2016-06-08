@@ -203,6 +203,15 @@ function createLink($url) {
 				return $u;
 			}
 		}
+	} elseif (preg_match('@replaytv_world\/(.+?\/\d{4,8})[\/_]@', $url, $m)) {
+		for ($i = 1; $i <= 4; $i++) {
+			$u = "http://creativemedia$i.rai.it/podcastmhp/replaytv_world/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
+			$h = get_headers($u);
+			_logDebug("test: $u > " . $h[0]);
+			if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+				return $u;
+			}
+		}
 	} else {
 		_logDebug("***********\r\n UNSUPPORTED LINK: $url\r\n***********");
 	}

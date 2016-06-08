@@ -113,6 +113,12 @@ if (isset($_GET['video'])) {
 		header('Content-type: video/mp4');
 		header('Location: ' . $m[1]);
 		ob_flush();
+	} elseif (preg_match('@src *: *".+?content/entry(.+)/master.m3u8" *,@', $ff, $m)) {
+		_logDebug("playing: http://vodpmd.la7.it.edgesuite.net/content/entry" . $m[1]);
+		ob_start();
+		header('Content-type: video/mp4');
+		header('Location: http://vodpmd.la7.it.edgesuite.net/content/entry' . $m[1]);
+		ob_flush();
 	}
 	exit();
 }
