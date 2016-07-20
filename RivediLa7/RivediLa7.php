@@ -107,13 +107,13 @@ if (isset($_GET['video'])) {
 	$page_url = rawurldecode($_GET['video']);
 	_logDebug("page: " . $page_url);
 	$ff = file_get_contents($page_url);
-	if (preg_match('@src_mp4 *: *"(.+)" *,@', $ff, $m)) {
+	if (preg_match('@src_mp4 *: *"(.+)" *,@', $ff, $m) || preg_match('@"mp4" *: *"(.+?)"@', $ff, $m)) {
 		_logDebug("playing: " . $m[1]);
 		ob_start();
 		header('Content-type: video/mp4');
 		header('Location: ' . $m[1]);
 		ob_flush();
-	} elseif (preg_match('@src *: *".+?content/entry(.+)/master.m3u8" *,@', $ff, $m)) {
+	} elseif (preg_match('@src *: *".+?content/entry(.+)/master.m3u8" *,@', $ff, $m) || preg_match('@"m3u8" *: *"(.+?)"@', $ff, $m)) {
 		_logDebug("playing: http://vodpmd.la7.it.edgesuite.net/content/entry" . $m[1]);
 		ob_start();
 		header('Content-type: video/mp4');
