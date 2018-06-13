@@ -71,22 +71,4 @@ function putConfigValue($key, $value) {
 	exec("sudo config_tool -c RAIREPLAY_$key='$value' >/dev/null 2>&1");
 }
 
-if (isset($_GET['video'])) {
-	_logDebug("video: " . $_GET['video']);
-	$url = '';
-	$ids = explode('@', $_GET['video']);
-
-	foreach ($ids as $id) {
-		$url = rai_getLink($id);
-		if ($url) {
-			break;
-		}
-	}
-
-	_logDebug('playing: ' . $url);
-	ob_start();
-	header('Location: ' . $url);
-	ob_flush();
-	exit();
-}
 ?>
