@@ -226,6 +226,41 @@ function _getYTVideo($id)
         }
     }
     
+    
+    //code added by nixxo:
+    //check and bypass age restriction if found
+    if (preg_match('@player-age-gate-content">@', $html)) {
+        _logInfo("Age-gate detected.");
+        //load the embed page
+        $html = file_get_contents("http://www.youtube.com/embed/$id");
+        if (preg_match('@"sts"\\s*:\\s*(\\d+?),@', $html, $sts)) {
+            $sts = $sts[1];
+            _logDebug("STS: $sts");
+        } else {
+            _logError("Age-gate bypass: STS not found.");
+            exit;
+        }
+        //get fmt_map from another page
+        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&sts=$sts&eurl=https://youtube.googleapis.com/v/$id");
+        if (preg_match("@url_encoded_fmt_stream_map=([^\"]*?)&@", $fmt_page, $ff)) {
+            $ff = urldecode($ff[1]);
+            //extract url and itag to create a clean fmt_map
+            preg_match_all("@url=([^&]+?)(&|$)@", $ff, $ur);
+            preg_match_all("@itag=(\d+)@", $ff, $it);
+            $ff = '';
+            for($i=0;$i<count($ur[1]);$i++){
+                $ff .= "itag=".$it[1][$i]."&url=".$ur[1][$i].",";
+            }
+            //append the format map to the html page so I don't have to change other code below
+            $html .= "\"url_encoded_fmt_stream_map\":\"$ff\"";
+        } else {
+            _logError("Age-gate bypass: Fmt_map not found.");
+            _logDebug($fmt_page);
+            exit;
+        }
+    }
+    //end of added code
+
     //code added by nixxo:
     //before parsing the video urls docode the player js and get the cipher
     //in order to decode the signature of signed videos.
@@ -429,7 +464,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     preg_match("/\"(signature)\",($pat)\($pat\)\)/", $ytJs, $fun);
     if (empty($fun[2])) {
         _logWarning("Unparsable function! [id:001]");
-        break;
+        exit;
     }
     $fun = $fun[2];
     preg_match("/\bfunction\s+\Q$fun\E\s*\($pat\)\s*{(.*?)}/sx", $ytJs, $fun2);
@@ -442,7 +477,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     }
     if (empty($fun)) {
         _logWarning("Unparsable function! [id:002]");
-        break;
+        exit;
     }
     $pieces = explode(";", $fun);
     $c = array();
