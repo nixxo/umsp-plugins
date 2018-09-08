@@ -270,6 +270,7 @@ function _getYTVideo($id)
         $tmp = stripslashes($sc[1]);
         $ytScriptURL = preg_match("@^\/yts@",$tmp) ? 'https://www.youtube.com' . $tmp : 'https:' . $tmp;
         _logDebug("jsPlayer_url: $tmp");
+
         $ytScriptSrc = file_get_contents($ytScriptURL);
         if ($ytScriptSrc) {
             $ytCipher = ytGrabCipher($ytScriptSrc);
@@ -461,12 +462,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     _logDebug("Parsing JS's functions...");
     $pat = '[\$a-zA-Z][a-zA-Z\d]*';
     $pat = "$pat(?:\.$pat)?";
-    preg_match("/\"(signature)\",($pat)\($pat\)\)/", $ytJs, $fun);
-    if (empty($fun[2])) {
+    preg_match("/(\w+)\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
+    if (empty($fun[1])) {
         _logWarning("Unparsable function! [id:001]");
         exit;
     }
-    $fun = $fun[2];
+    $fun = $fun[1];
     preg_match("/\bfunction\s+\Q$fun\E\s*\($pat\)\s*{(.*?)}/sx", $ytJs, $fun2);
     $fun2 = preg_replace("/var\s($pat)=($pat)\[0\];\\2\[0\]=\\2\[(\d+)%\\2\.length\];\\2\[\\3\]=\\1;/", "$2=swap($2,$3);", $fun2[1]);
     if (empty($fun2)) {
