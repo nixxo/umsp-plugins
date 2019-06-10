@@ -1,10 +1,8 @@
-
-
 global $sky_conf;
 $sky_conf = array(
 	'CONF' => 'http://video.sky.it/etc/designs/skyvideoportale/library/static/js/config/config.json',
-	'GET_VIDEO_SEARCH' => 'http://video.sky.it/be/getVideoDataSearch?token={token}&section={section}&subsection={subsection}&page={page}&count=30',
-	'GET_PLAYLISTS' => 'http://video.sky.it/be/getPlaylistInfo?token={token}&section={section}&subsection={subsection}&start=0&limit=31',
+	'GET_VIDEO_SEARCH' => 'http://video.sky.it/be/getVideoDataSearch?token={token}&section=sport&subsection={subsection}&start=0&count=31',
+	'GET_PLAYLISTS' => 'http://video.sky.it/be/getPlaylistInfo?token={token}&section=sport&subsection={subsection}&start=0&limit=31',
 	'GET_PLAYLIST_VIDEO' => 'http://video.sky.it/be/getPlaylistVideoData?token={token}&id={id}',
 	'GET_VIDEO_DATA' => 'http://video.sky.it/be/getVideoData?token={token}&id={id}&rendition=web',
 	'GET_VOD_ACCESS_TOKEN' => 'http://video.sky.it/SkyItVideoportalUtility/getVODAccessToken.do?token={token}&url={url}&dec=0',
@@ -12,43 +10,14 @@ $sky_conf = array(
 );
 
 function skysport_main_menu() {
-	_logInfo("main menu sky");
-	//exit;
-	$ff = file_get_contents('http://video.sky.it/');
-	if (preg_match_all("@<div class=\"mainvoice\"><a id=\"(\w+)\">(.+?)</a>@", $ff, $mm)) {
+	$ff = file_get_contents('http://video.sky.it/sport');
+	if (preg_match_all("@<a\s*href=\"/sport/([\w-]+)\?.*?\">\s+((<div.+?)|.{0})\s+<span\s*class=\".*?\">\s*([\w\s-]+?)\s*</span>@", $ff, $mm)) {
 		$items = array();
 		_logDebug(print_r($mm[1], true));
 		$mm[1] = array_unique($mm[1]);
 		foreach ($mm[1] as $k => $v) {
 			$items[] = array(
-				'id' => build_umsp_url('sky_menu', array($mm[1][$k])),
-				'dc:title' => $mm[2][$k],
-				'upnp:class' => 'object.container',
-			);
-		}
-		return $items;
-	} else {
-		_logError('Error retrieving Subsections');
-		return array(
-			'id' => build_umsp_url('sky_error', array('')),
-			'dc:title' => 'Error retrieving Subsections',
-			'upnp:class' => 'object.container',
-		);
-	}
-}
-
-function sky_menu($id) {
-	//$ff = file_get_contents('http://video.sky.it/sport');
-	//if (preg_match_all("@<a\s*href=\"https://video.sky.it/sport/([\w-]+)\?.*?\">\s+((<div.+?)|.{0})\s+<span\s*class=\".*?\">\s*([\w\s-]+?)\s*</span>@", $ff, $mm)) {
-	_logDebug("http://video.sky.it/$id");
-	$ff = file_get_contents("http://video.sky.it/$id");
-	if (preg_match_all("@<a\s*href=\"https*://video\.sky\.it/$id/([\w-]+)\?.*?\">\s+((<div.+?)|.{0})\s+<span\s*class=\".*?\">\s*([\w\s-&#;è]+?)\s*</span>@", $ff, $mm)) {
-		$items = array();
-		_logDebug(print_r($mm[1], true));
-		$mm[1] = array_unique($mm[1]);
-		foreach ($mm[1] as $k => $v) {
-			$items[] = array(
-				'id' => build_umsp_url('sky_subsection', array($id, $v, $mm[4][$k])),
+				'id' => build_umsp_url('skysport_subsection', array($v, $mm[4][$k])),
 				'dc:title' => $mm[4][$k],
 				'upnp:class' => 'object.container',
 			);
@@ -57,21 +26,20 @@ function sky_menu($id) {
 	} else {
 		_logError('Error retrieving Subsections');
 		return array(
-			'id' => build_umsp_url('sky_error', array('')),
+			'id' => build_umsp_url('skysport_error', array('')),
 			'dc:title' => 'Error retrieving Subsections',
 			'upnp:class' => 'object.container',
 		);
 	}
 }
 
-function sky_subsection($s, $ss, $tt, $page = 0) {
-	_logInfo(">>> subsection: $s - $ss <<<");
+function skysport_subsection($ss, $tt) {
+	_logInfo(">>> subsection: $ss <<<");
 	global $sky_conf;
+	//$pl_url = 'http://video.sky.it/be/getVideoDataSearch?token={token}&section=sport&subsection={subsection}&count=63&page=0';
 	$pl_url = $sky_conf['GET_VIDEO_SEARCH'];
 	$pl_url = preg_replace("@\{token\}@", $sky_conf['TOKEN_SKY'], $pl_url);
-	$pl_url = preg_replace("@\{section\}@", $s, $pl_url);
 	$pl_url = preg_replace("@\{subsection\}@", $ss, $pl_url);
-	$pl_url = preg_replace("@\{page\}@", $page, $pl_url);
 
 	_logDebug('url: ' . $pl_url);
 	$ff = json_decode(file_get_contents($pl_url), true);
@@ -80,34 +48,19 @@ function sky_subsection($s, $ss, $tt, $page = 0) {
 		return null;
 	}
 	_logDebug(print_r($ff, true));
-	if ($page == 0) {
-		$items[] = array(
-			'id' => build_umsp_url('sky_playlist', array($s, $ss)),
-			'dc:title' => 'Playlist di ' . $tt,
-			'upnp:class' => 'object.container',
-		);
-	} else {
-		$items[] = array(
-			'id' => build_umsp_url('sky_subsection', array($s, $ss, $tt, $page - 1)),
-			'dc:title' => 'Pagina ' . $page,
-			'upnp:class' => 'object.container',
-		);
-	}
-	$items = array_merge($items, sky_parse_playlist($ff));
 	$items[] = array(
-		'id' => build_umsp_url('sky_subsection', array($s, $ss, $tt, $page + 1)),
-		'dc:title' => 'Pagina ' . ($page + 2),
+		'id' => build_umsp_url('skysport_playlist', array($ss)),
+		'dc:title' => 'Playlist di ' . $tt,
 		'upnp:class' => 'object.container',
 	);
-	return $items;
+	return array_merge($items, skysport_parse_playlist($ff));
 }
 
-function sky_playlist($s, $ss) {
-	_logInfo(">>> $s - $ss playlist <<<");
+function skysport_playlist($ss) {
+	_logInfo(">>> $ss playlist <<<");
 	global $sky_conf;
 	$pl_url = $sky_conf['GET_PLAYLISTS'];
 	$pl_url = preg_replace("@\{token\}@", $sky_conf['TOKEN_SKY'], $pl_url);
-	$pl_url = preg_replace("@\{section\}@", $s, $pl_url);
 	$pl_url = preg_replace("@\{subsection\}@", $ss, $pl_url);
 
 	_logDebug('url: ' . $pl_url);
@@ -127,7 +80,7 @@ function sky_playlist($s, $ss) {
 
 		//_logDebug(print_r($date, true));
 		$items[] = array(
-			'id' => build_umsp_url('sky_playlist_content', array($v['playlist_id'])),
+			'id' => build_umsp_url('skysport_playlist_content', array($v['playlist_id'])),
 			'dc:title' => $date[3] . '/' . $date[2] . '/' . $date[1] . ' - ' . $v['title'],
 			'desc' => $v['short_desc'],
 			'upnp:album_art' => $v['thumb'],
@@ -137,7 +90,7 @@ function sky_playlist($s, $ss) {
 	return $items;
 }
 
-function sky_playlist_content($pl_id) {
+function skysport_playlist_content($pl_id) {
 	_logInfo(">>> playlist id: $pl_id<<<");
 	global $sky_conf;
 	$pl_url = $sky_conf['GET_PLAYLIST_VIDEO'];
@@ -151,10 +104,10 @@ function sky_playlist_content($pl_id) {
 		return null;
 	}
 	_logDebug(print_r($ff, true));
-	return sky_parse_playlist($ff);
+	return skysport_parse_playlist($ff);
 }
 
-function sky_parse_playlist($pl) {
+function skysport_parse_playlist($pl) {
 	$items = array();
 	foreach ($pl['assets'] as $v) {
 		if (!preg_match("@^\d+/\d+@", $v['modify_date'], $date)) {
@@ -173,7 +126,7 @@ function sky_parse_playlist($pl) {
 	return $items;
 }
 
-function sky_get_video($asset_id) {
+function skysport_get_video($asset_id) {
 	_logInfo('>>> get video data with id:' . $asset_id . ' <<<');
 	global $sky_conf;
 	$pl_url = $sky_conf['GET_VIDEO_DATA'];
@@ -206,7 +159,7 @@ function sky_get_video($asset_id) {
 }
 
 if (isset($_GET['asset_id'])) {
-	$url = sky_get_video($_GET['asset_id']);
+	$url = skysport_get_video($_GET['asset_id']);
 	_logInfo('playing: ' . $url);
 	ob_start();
 	$url = str_replace("https:", "http:", $url);
