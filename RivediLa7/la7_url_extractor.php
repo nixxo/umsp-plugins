@@ -50,14 +50,16 @@ function la7_day($id) {
 function la7_video($page) {
 	_logDebug("page: " . $page);
 	$ff = file_get_contents($page);
-	if (preg_match('@src *: *".+?content/entry(.+)/master.m3u8" *,@', $ff, $m) || preg_match('@"m3u8" *: *".+content/entry(.+?)\,\.mp4\.csmil/master\.m3u8"@', $ff, $m)) {
+	if (preg_match('@src *: *".+?content/entry(.+)/master.m3u8" *,@', $ff, $m) ||
+	    preg_match('@"m3u8" *: *".+content/entry(.+?)\,\.mp4\.csmil/master\.m3u8"@', $ff, $m)) {
 		$dl = "http://vodpmd.la7.it.edgesuite.net/content/entry$m[1].mp4";
 		_logDebug("playing m3u8: $dl");
 		ob_start();
 		header('Content-type: video/mp4');
 		header('Location: ' . $dl);
 		ob_flush();
-	} elseif (preg_match('@src_mp4 *: *"(.+)" *,@', $ff, $m) || preg_match('@"mp4" *: *"(.+?)"@', $ff, $m)) {
+	} elseif (preg_match('@src_mp4 *: *"(.+)" *,@', $ff, $m) ||
+	          preg_match('@"mp4" *: *"(.+?)"@', $ff, $m)) {
 		_logDebug("playing mp4: " . $m[1]);
 		ob_start();
 		header('Content-type: video/mp4');
