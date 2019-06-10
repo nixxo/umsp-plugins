@@ -225,8 +225,7 @@ function _getYTVideo($id)
             _logDebug("Set cookie to ".$GLOBALS['cookie']);
         }
     }
-    
-    
+
     //code added by nixxo:
     //check and bypass age restriction if found
     if (preg_match('@player-age-gate-content">@', $html)) {
@@ -270,7 +269,6 @@ function _getYTVideo($id)
         $tmp = stripslashes($sc[1]);
         $ytScriptURL = preg_match("@^\/yts@",$tmp) ? 'https://www.youtube.com' . $tmp : 'https:' . $tmp;
         _logDebug("jsPlayer_url: $tmp");
-
         $ytScriptSrc = file_get_contents($ytScriptURL);
         if ($ytScriptSrc) {
             $ytCipher = ytGrabCipher($ytScriptSrc);
@@ -465,7 +463,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     preg_match("/(\w+)\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
     if (empty($fun[1])) {
         _logWarning("Unparsable function! [id:001]");
-        exit;
+	break;
+	exit;
     }
     $fun = $fun[1];
     preg_match("/\bfunction\s+\Q$fun\E\s*\($pat\)\s*{(.*?)}/sx", $ytJs, $fun2);
@@ -478,7 +477,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     }
     if (empty($fun)) {
         _logWarning("Unparsable function! [id:002]");
-        exit;
+	break;
+	exit;
     }
     $pieces = explode(";", $fun);
     $c = array();
