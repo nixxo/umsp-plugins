@@ -300,8 +300,8 @@ function _getYTVideo($id)
                     //regular signature videos
                     //$sig = $result['sig'];
                     //$url.="&signature=".$sig;
-                    $useYTDL=1;
-                    break;
+                    //$useYTDL=1;
+                    //break;
                     
                 }
                 if(preg_match('/(?:.u0026|^)s=(?P<sig>.*?)(?:.u0026|$)/', urldecode($var_fmt_url_map), $result)){
@@ -463,8 +463,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     preg_match("/(\w+)\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
     if (empty($fun[1])) {
         _logWarning("Unparsable function! [id:001]");
-	break;
-	exit;
+        exit;
     }
     $fun = $fun[1];
     preg_match("/\bfunction\s+\Q$fun\E\s*\($pat\)\s*{(.*?)}/sx", $ytJs, $fun2);
@@ -477,8 +476,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     }
     if (empty($fun)) {
         _logWarning("Unparsable function! [id:002]");
-	break;
-	exit;
+        exit;
     }
     $pieces = explode(";", $fun);
     $c = array();
