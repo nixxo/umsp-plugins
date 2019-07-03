@@ -323,7 +323,7 @@ function _getYTVideo($id)
                     }
                 }
                 //add signature if present
-                $hash_qlty_url[$itag] = $sig ? $url . "&signature=" . $sig : $url;
+                $hash_qlty_url[$itag] = $sig ? $url . "&sig=" . $sig : $url;
                 _logDebug("_getYTVideo -> Quality ".$itag." is available and has URL ".$url);
         }
     }
