@@ -272,8 +272,8 @@ function rai_day($ch, $day)
                                 7 time
                             */
 
-                            $img = preg_match("/^http/", $img[1])?$img[1]:"http://www.rai.it".$img[1];
-                            $href = preg_match("/^http/", $href[1])?$href[1]:"http://www.raiplay.it".$href[1];
+                            $img = preg_match("/^http/", $img[1])?$img[1]:"https://www.rai.it".$img[1];
+                            $href = preg_match("/^http/", $href[1])?$href[1]:"https://www.raiplay.it".$href[1];
                             $items[] = createPlayItem(
                                 build_server_url(array('video_page' => $href)),
                                 clean_title($ora[1] . ' - ' . $mm[1]),
@@ -384,21 +384,21 @@ function rai_createLink($url)
 function rai_getRelinker($page)
 {
     //try json first
-    $u = str_replace("html?json", "html", $page);
-    $u = str_replace("html", "html?json", $u);
+    $u = str_replace(".html?json", ".json", $page);
+    $u = str_replace(".html", ".json", $u);
 
     $ff = file_get_contents($u);
     $jj = json_decode($ff, true);
 
-    if (isset($jj['video']['contentUrl'])) {
-        if (preg_match("@relinkerServlet\.htm\?cont=(.+?)$@", $jj['video']['contentUrl'], $mm)) {
+    if (isset($jj['video']['content_url'])) {
+        if (preg_match("/relinkerServlet\.htm\?cont=(.+?)$/", $jj['video']['content_url'], $mm)) {
             return $mm[1];
         }
     }
 
     //get from webpage if json fails
     $ff = file_get_contents($page);
-    if (preg_match("@(data-video-url|videoURL)\s*=\s*\".+?relinkerServlet\.htm\?cont=(.+?)\"@", $ff, $mm)) {
+    if (preg_match("/(data-video-url|videoURL)\s*=\s*\".+?relinkerServlet\.htm\?cont=(.+?)\"/", $ff, $mm)) {
         return $mm[2];
     }
     return null;
