@@ -232,23 +232,31 @@ function _getYTVideo($id)
         _logInfo("Age-gate detected.");
         //load the embed page
         $html = file_get_contents("http://www.youtube.com/embed/$id");
+        $sts = "";
         if (preg_match('@"sts"\\s*:\\s*(\\d+?),@', $html, $sts)) {
             $sts = $sts[1];
             _logDebug("STS: $sts");
         } else {
             _logError("Age-gate bypass: STS not found.");
-            exit;
         }
         //get fmt_map from another page
-        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&sts=$sts&eurl=https://youtube.googleapis.com/v/$id");
-        if (preg_match("@url_encoded_fmt_stream_map=([^\"]*?)&@", $fmt_page, $ff)) {
+        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&eurl=https://youtube.googleapis.com/v/$id".$sts);
+        //new url format
+        if (preg_match("/\"formats\":\[.+?\]/", urldecode($fmt_page), $ff)) {
+            _logInfo("Added formats from age-gated page.");
+            $html .= addslashes($ff[0]);
+        }
+        //old url format: DEPRECATED???
+        elseif (preg_match("@url_encoded_fmt_stream_map=([^\"]*?)&@", $fmt_page, $ff)) {
             $ff = urldecode($ff[1]);
             //extract url and itag to create a clean fmt_map
             preg_match_all("@url=([^&]+?)(&|$)@", $ff, $ur);
             preg_match_all("@itag=(\d+)@", $ff, $it);
+            preg_match_all("/(&|^)s=(\S+?)(&|$)/", $ff, $sig);
             $ff = '';
             for($i=0;$i<count($ur[1]);$i++){
-                $ff .= "itag=".$it[1][$i]."&url=".$ur[1][$i].",";
+                $s = isset($sig[2][$i]) ? "\u0026s=".$sig[2][$i] : "";
+                $ff .= "itag=".$it[1][$i]."&url=".$ur[1][$i].$s.",";
             }
             //append the format map to the html page so I don't have to change other code below
             $html .= "\"url_encoded_fmt_stream_map\":\"$ff\"";
@@ -279,8 +287,44 @@ function _getYTVideo($id)
 
     $useYTDL=0;
     //_logDebug("HTML file: ".$html);
+    //
+    //new format string 2019-09
+    preg_match("/formats.*?:(\[(.+?)\])/", $html, $new_fmt);
+    //old format url map: DEPRCATED???
     preg_match("/\"url_encoded_fmt_stream_map\":\s*\"([^\"]*)\"/", $html, $fmt_url_map);
-    if(isset($fmt_url_map[1])){
+    
+    if (isset($new_fmt[0])) {
+        _logInfo("new url format");
+        _logDebug("Matched formats: ".$new_fmt[1]);
+        $new_fmt = stripslashes($new_fmt[1]);
+        $new_fmt = json_decode($new_fmt, true);
+            
+        foreach ($new_fmt as $nf) {
+            if (isset($nf["cipher"])) {
+                _logDebug("format [".$nf["itag"]."] with cipher found. Decoding...");
+                if (preg_match('/url=(?P<url>.*?)(\&|$)/', $nf["cipher"], $result)) {
+                    $url = urldecode($result['url']);
+                    _logDebug("url= $url");
+                    if (preg_match('/(\&|^)s=(?P<sig>.*?)(\&|$)/', urldecode($nf["cipher"]), $result)) {
+                        //special signature for VEVO clips and other protected content
+                        //decode the signature
+                        if ($ytCipher) {
+                            _logDebug('enc_sig: ' . $result['sig']);
+                            $sig = ytDecodeSignature($ytCipher, $result['sig']);
+                            _logDebug('dec_sig: ' . $sig);
+                        }
+                        $hash_qlty_url[$nf["itag"]] = $sig ? $url . "&sig=" . $sig : $url;
+                    }
+                }
+            } elseif (isset($nf["url"])) {
+                _logDebug("format [".$nf["itag"]."] normal.");
+                $hash_qlty_url[$nf["itag"]] = $nf["url"];
+            } else {
+                _logWarning("Url not found:");
+                _logWarning($nf);
+            }
+        }
+    } elseif(isset($fmt_url_map[1])){
         _logDebug("Matched url_encoded_fmt_stream_map: ".$fmt_url_map[1]);
         foreach(explode(',',$fmt_url_map[1]) as $var_fmt_url_map) {
               _logDebug("var_fmt_url_map: $var_fmt_url_map");
