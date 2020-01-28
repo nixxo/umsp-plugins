@@ -504,7 +504,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     _logDebug("Parsing JS's functions...");
     $pat = '[\$a-zA-Z][a-zA-Z\d]*';
     $pat = "$pat(?:\.$pat)?";
-    preg_match("/(\w+)\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
+    preg_match("/\s+(\w{2})\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
     if (empty($fun[1])) {
         _logWarning("Unparsable function! [id:001]");
         exit;
