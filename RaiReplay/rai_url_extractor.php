@@ -2,9 +2,9 @@
 
 function rai_main_menu()
 {
-    _logDebug('main menu 19.10.31');
+    _logDebug('main menu 20.03.04');
     $items = array();
-    $channels = array("Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo", "RaiSport");
+    $channels = array("Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo");
     $logos = array(
         "https://upload.wikimedia.org/wikipedia/commons/f/fa/Rai_1_-_Logo_2016.svg", //1
         "https://upload.wikimedia.org/wikipedia/commons/9/99/Rai_2_-_Logo_2016.svg", //2
@@ -16,7 +16,6 @@ function rai_main_menu()
         "https://upload.wikimedia.org/wikipedia/commons/a/ad/Rai_Premium_-_Logo_2017.svg", //premium
         "https://upload.wikimedia.org/wikipedia/commons/c/c1/Rai_Gulp_-_Logo_2017.svg", //gulp
         "https://upload.wikimedia.org/wikipedia/commons/0/01/Rai_Yoyo_-_Logo_2017.svg", //yoyo
-        "https://upload.wikimedia.org/wikipedia/commons/a/ae/Rai_Sport_-_Logo_2017.svg", //sport
     );
 
     for ($i = 0; $i < count($channels); $i++) {
@@ -54,6 +53,7 @@ function rai_main_menu()
         "https://www.raiplay.it/dl/doc/1528806533924_ico-kids.svg",
     );
 
+    /*
     for ($i = 0; $i < count($sections); $i++) {
         $items[] = array(
             'id' => build_umsp_url('rai_section', array($section_urls[$i])),
@@ -62,6 +62,7 @@ function rai_main_menu()
             'upnp:class' => 'object.container',
         );
     }
+    */
 
     $items[] = array(
         'id' => build_umsp_url('rai_config'),
@@ -85,10 +86,10 @@ function rai_channel($id)
     $giorni = array('Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato');
 
     $items = array();
-    if ($id == "RaiNews24") {
+    if ($id == "RaiNews24old") {
         $ff = file_get_contents("https://studio24.blog.rainews.it/");
         if (preg_match_all("@<a class=['\"]rsswidget['\"] href=['\"](http:\/\/studio24.blog.rainews.it/\d.+?)['\"]>(.+?)<\/a>@", $ff, $mm)) {
-            _logDebug(print_r($mm, true));
+            //_logDebug(print_r($mm, true));
             foreach ($mm[0] as $k => $v) {
                 $items[] = createPlayItem(
                     build_server_url(array('video_page' => $mm[1][$k])),
@@ -100,13 +101,13 @@ function rai_channel($id)
                 );
             }
         }
-    } elseif ($id == "RaiNews24new") {
+    } elseif ($id == "RaiNews24") {
         $ff = file_get_contents("https://studio24.blog.rainews.it/rss");
         preg_match_all("@src=\"(.+?\?iframe)\&@", $ff, $mm);
         preg_match_all("@<item>\s*<title>(.+?)</title>@", $ff, $mt);
         if ($mm && $mt) {
-            _logDebug(print_r($mm, true));
-            _logDebug(print_r($mt, true));
+            //_logDebug(print_r($mm, true));
+            //_logDebug(print_r($mt, true));
             foreach ($mm[0] as $k => $v) {
                 $items[] = createPlayItem(
                     build_server_url(array('video_page' => $mm[1][$k])),
@@ -384,8 +385,16 @@ function rai_createLink($url)
 function rai_getRelinker($page)
 {
     //try json first
-    $u = str_replace(".html?json", ".json", $page);
-    $u = str_replace(".html", ".json", $u);
+    if (preg_match("/raiplay\.it/", $page)) {
+        $u = str_replace(".html?json", ".json", $page);
+        $u = str_replace(".html", ".json", $u);
+        _logDebug("new page: $u");
+    } elseif (preg_match("/rai\.tv/", $page)) {
+        $u = str_replace(".html?iframe", ".html?json", $page);
+        _logDebug("new page: $u");
+    } else {
+        $u=$page;
+    }
 
     $ff = file_get_contents($u);
     $jj = json_decode($ff, true);
