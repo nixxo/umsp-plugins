@@ -24,17 +24,16 @@ History:
  */
 
 $pluginInfo = array(
-	"id" => "webtv2",
-	"name" => "WebTV2",
-	"desc" => "WebTV2 - Plays TV-translations from m3u-playlists",
-	"author" => "avkiev, nixxo",
-	"date" => "17.02.2015 - 04.04.2018 (nixxo)",
-	"version" => "1.4",
-	"url" => "",
-	"url2" => "http://wdhd.ru/board/index.php?a=vtopic&t=5223",
-	"thumb" => "http://avkiev.16mb.com/wdtv/pic/webtv.jpg",
-	"art" => "http://avkiev.16mb.com/wdtv/pic/webtv.jpg",
-	"rating" => "WebTV",
-	"category" => "WebTV",
+    "id" => "webtv2",
+    "name" => "WebTV2",
+    "desc" => "WebTV2 - Plays TV-translations from m3u-playlists",
+    "author" => "avkiev, nixxo",
+    "date" => "17.02.2015 - 04.04.2018 (nixxo)",
+    "version" => "1.4",
+    "url" => "",
+    "url2" => "http://wdhd.ru/board/index.php?a=vtopic&t=5223",
+    "thumb" => "http://avkiev.16mb.com/wdtv/pic/webtv.jpg",
+    "art" => "http://avkiev.16mb.com/wdtv/pic/webtv.jpg",
+    "rating" => "WebTV",
+    "category" => "WebTV",
 );
-?>

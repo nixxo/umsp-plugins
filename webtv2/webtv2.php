@@ -252,7 +252,7 @@ function Container($id, $title, $thumb = " ", $single = false)
 
 function Container0($id, $title, $thumb = " ")
 {
-    if ($thumb{0} == "/") {
+    if ($thumb[0] == "/") {
         $thumb = "http://avkiev.16mb.com/wdtv/pic$thumb";
     }
 
