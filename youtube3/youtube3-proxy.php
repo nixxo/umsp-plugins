@@ -273,16 +273,17 @@ function _getYTVideo($id)
     //in order to decode the signature of signed videos.
     $ytCipher = null;
     // something like... https://s.ytimg.com/yts/jsbin/player-it_IT-vflPnd0Bl/base.js
-    if (preg_match('@"js":\\s*"(.*?)"@', $html, $sc)) {
+    if (preg_match('/"js(?:Url)?"\s*:\s*"(.*?)"/', $html, $sc)) {
         $tmp = stripslashes($sc[1]);
-        $ytScriptURL = preg_match("@^\/yts@",$tmp) ? 'https://www.youtube.com' . $tmp : 'https:' . $tmp;
-        _logDebug("jsPlayer_url: $tmp");
+        $ytScriptURL = preg_match("/^\/\//", $tmp) ? 'https:' . $tmp : 'https://www.youtube.com' . $tmp;
+        _logInfo("jsPlayer_url: $ytScriptURL");
         $ytScriptSrc = file_get_contents($ytScriptURL);
         if ($ytScriptSrc) {
             $ytCipher = ytGrabCipher($ytScriptSrc);
-            _logDebug("ytCipher is: $ytCipher");
+            _logInfo("ytCipher is: $ytCipher");
         }
     }
+    else _logError("No js player found.");
     //end of added code.
 
     $useYTDL=0;
@@ -301,7 +302,7 @@ function _getYTVideo($id)
             
         foreach ($new_fmt as $nf) {
             if (isset($nf["cipher"])) {
-                _logDebug("format [".$nf["itag"]."] with cipher found. Decoding...");
+                _logInfo("format [".$nf["itag"]."] with cipher found. Decoding...");
                 if (preg_match('/url=(?P<url>.*?)(\&|$)/', $nf["cipher"], $result)) {
                     $url = urldecode($result['url']);
                     _logDebug("url= $url");
@@ -317,11 +318,17 @@ function _getYTVideo($id)
                     }
                 }
             } elseif (isset($nf["url"])) {
-                _logDebug("format [".$nf["itag"]."] normal.");
+                _logInfo("format [".$nf["itag"]."] normal.");
                 $hash_qlty_url[$nf["itag"]] = $nf["url"];
+            } elseif(isset($nf["signatureCipher"])) {
+                _logInfo("format [".$nf["itag"]."] sig cypher.");
+                parse_str($nf["signatureCipher"], $str);
+                $sig = ytDecodeSignature($ytCipher, $str['s']);
+                $url = urldecode($str["url"]);
+                $hash_qlty_url[$nf["itag"]] = $url . "&sig=" . $sig;
             } else {
                 _logWarning("Url not found:");
-                _logWarning($nf);
+                _logWarning(print_r($nf,true));
             }
         }
     } elseif(isset($fmt_url_map[1])){
@@ -374,6 +381,9 @@ function _getYTVideo($id)
     else{
         _logError("Unable to find url_encoded_fmt_stream_map! There are changes on the Youtube side!");
         system("sudo su -c 'echo \"Unable to find url_encoded_fmt_stream_map! There are changes on the Youtube side!\" >> /tmp/notice.osd'");
+
+        file_put_contents("/tmp/yt3.$id.log.html", $html);
+        //var_dump($html);
         return null;
     }
     
@@ -504,9 +514,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
     _logDebug("Parsing JS's functions...");
     $pat = '[\$a-zA-Z][a-zA-Z\d]*';
     $pat = "$pat(?:\.$pat)?";
-    preg_match("/\s+(\w{2})\s*=\s*function\((\w+)\)\{\s*\w+=\s*\w+\.split\(\"\"\)\s*;/", $ytJs, $fun);
+    preg_match("/(?:\b|[^a-zA-Z0-9$])([a-zA-Z0-9$]{2})\s*=\s*function\(\s*a\s*\)\s*{\s*a\s*=\s*a\.split\(\s*\"\"\s*\)/", $ytJs, $fun);
     if (empty($fun[1])) {
-        _logWarning("Unparsable function! [id:001]");
+        _logError("Unparsable function! [id:001]");
         exit;
     }
     $fun = $fun[1];
@@ -519,7 +529,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
         $fun = $fun2;
     }
     if (empty($fun)) {
-        _logWarning("Unparsable function! [id:002]");
+        _logError("Unparsable function! [id:002]");
         exit;
     }
     $pieces = explode(";", $fun);
@@ -536,6 +546,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
             $f = preg_replace('@^.*\.@s', "", $sw[2]);
             preg_match("@\b\Q$f\E:\s*function\s*\(.*?\)\s*({[^{}]+})@s", $ytJs, $fn3);
             if (preg_match("@var\s($pat)=($pat)\[0\];@s", $fn3[1])) {
+                $c[] = "w$n";
+            }elseif (preg_match("@void 0===($pat)\[($pat)\]@s", $fn3[1])) {
                 $c[] = "w$n";
             } elseif (preg_match("@\b$pat\.reverse\(@s", $fn3[1])) {
                 $c[] = "r";
