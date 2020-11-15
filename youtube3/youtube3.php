@@ -35,7 +35,7 @@ set_time_limit(0);
 define("PLUGIN_NAME",str_replace('.php','',basename(__file__)));
 define("PROXY_URL","http://".$_SERVER['SERVER_ADDR'].":".$_SERVER['SERVER_PORT']."/umsp/plugins/".PLUGIN_NAME."/".PLUGIN_NAME."-proxy.php");
 //Youtube simple-api v3 key. Don't use it for other projects, please
-define("DEVELOPER_KEY", 'AIzaSyAL1dgjAPNxt4dlqshoNergP4R36JRXAgs');
+define("DEVELOPER_KEY", 'AIzaSyDDGgNfJ43o8ssRGwdZvwdyg8FGiV_8kT8');
 
 global $nextPage;
 $nextPage="";
