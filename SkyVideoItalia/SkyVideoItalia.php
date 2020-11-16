@@ -4,15 +4,20 @@ include_once $_SERVER['DOCUMENT_ROOT'] . '/umsp/funcs-utility.php';
 global $logLevel;
 global $logIdent;
 // set the logging level, one of L_ALL, L_DEBUG, L_INFO, L_WARNING, L_ERROR, L_OFF
-$logLevel = L_INFO;
+
 $logIdent = 'SkyVideoItaliaPlugIn';
 
-$f = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php");
-file_put_contents("/tmp/SkyVideoItalia-temp.php", $f);
-include_once '/tmp/SkyVideoItalia-temp.php';
+$dev = true;
 
-//for development
-//include_once 'sky_url_extractor.php';
+if ($dev) {
+    $logLevel = L_DEBUG;
+    include_once 'sky_url_extractor.php';
+} else {
+    $logLevel = L_WARNING;
+    $f = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php");
+    file_put_contents("/tmp/SkyVideoItalia-temp.php", $f);
+    include_once '/tmp/SkyVideoItalia-temp.php';
+}
 
 function _pluginMain($prmQuery)
 {
