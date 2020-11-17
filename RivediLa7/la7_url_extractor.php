@@ -58,8 +58,10 @@ function la7_video($page)
 {
     _logDebug("page: " . $page);
     $ff = file_get_contents(PROXY . urlencode($page));
-    if (preg_match('/"m3u8"\s*:\s*".+?content\/entry\/([^,]+?),\.mp4\.csmil\/master\.m3u8"/', $ff, $m)) {
-        $dl = "https://awsvodpkg.iltrovatore.it/content/entry/$m[1].mp4";
+    //if (preg_match('/"m3u8"\s*:\s*".+?content\/entry\/([^,]+?),\.mp4\.csmil\/master\.m3u8"/', $ff, $m)) {
+    //$dl = "https://awsvodpkg.iltrovatore.it/content/entry/$m[1].mp4";
+    if (preg_match('/"m3u8"\s*:\s*".+?content\/entry\/.+_(0_.+?)_\d,\.mp4\.csmil\/master\.m3u8"/', $ff, $m)) {
+        $dl = "http://nkdam.iltrovatore.it/p/103/sp/10300/serveFlavor/flavorId/$m[1]";
         _logDebug("playing m3u8: $dl");
         ob_start();
         header('Content-type: video/mp4');

@@ -9,7 +9,8 @@ $sky_conf = array(
     'GET_PLAYLIST_VIDEO' => 'https://video.sky.it/be/getPlaylistVideoData?token={token}&id={id}',
     'GET_VIDEO_DATA' => 'https://apid.sky.it/vdp/v1/getVideoData?token={token}&caller=sky&rendition=web&id={id}',
     'GET_VIDEO_DATA_OLD' => 'https://video.sky.it/be/getVideoData?token={token}&id={id}&rendition=web',
-    'GET_VOD_ACCESS_TOKEN' => 'https://video.sky.it/SkyItVideoportalUtility/getVODAccessToken.do?token={token}&url={url}&dec=0',
+    'GET_VOD_ACCESS_TOKEN' => 'https://apid.sky.it/vdp/v1/getVodAccessToken?token={token}&url={url}&dec=0',
+    'GET_VOD_ACCESS_TOKEN_OLD' => 'https://video.sky.it/SkyItVideoportalUtility/getVODAccessToken.do?token={token}&url={url}&dec=0',
     'TOKEN_SKY' => 'F96WlOd8yoFmLQgiqv6fNQRvHZcsWk5jDaYnDvhbiJk',
 );
 
