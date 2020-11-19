@@ -3,9 +3,9 @@
 function rai_main_menu()
 {
     _logDebug('main menu 20.03.04');
-    $items = array();
+    $items    = array();
     $channels = array("Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo");
-    $logos = array(
+    $logos    = array(
         "https://upload.wikimedia.org/wikipedia/commons/f/fa/Rai_1_-_Logo_2016.svg", //1
         "https://upload.wikimedia.org/wikipedia/commons/9/99/Rai_2_-_Logo_2016.svg", //2
         "https://upload.wikimedia.org/wikipedia/commons/4/47/Rai_3_-_Logo_2016.svg", //3
@@ -20,10 +20,10 @@ function rai_main_menu()
 
     for ($i = 0; $i < count($channels); $i++) {
         $items[] = array(
-            'id' => build_umsp_url('rai_channel', array($channels[$i])),
-            'dc:title' => $channels[$i],
+            'id'             => build_umsp_url('rai_channel', array($channels[$i])),
+            'dc:title'       => $channels[$i],
             'upnp:album_art' => $logos[$i],
-            'upnp:class' => 'object.container',
+            'upnp:class'     => 'object.container',
         );
     }
 
@@ -65,10 +65,10 @@ function rai_main_menu()
     */
 
     $items[] = array(
-        'id' => build_umsp_url('rai_config'),
-        'dc:title' => 'Configura Plugin',
+        'id'             => build_umsp_url('rai_config'),
+        'dc:title'       => 'Configura Plugin',
         'upnp:album_art' => 'http://lh5.googleusercontent.com/-xsH3IJAYXd0/TvwfRdc7DMI/AAAAAAAAAFk/NmvkjuqP_eo/s220/Settings.png',
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
     return $items;
 }
@@ -82,7 +82,7 @@ function rai_channel($id)
 {
     _logDebug("channel $id");
 
-    $mesi = array(1 => 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre');
+    $mesi   = array(1 => 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre');
     $giorni = array('Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato');
 
     $items = array();
@@ -121,11 +121,11 @@ function rai_channel($id)
         }
     } else {
         for ($i = 0; $i <= 7; $i++) {
-            $days_ago = date('d-m-Y', mktime(0, 0, 0, date("m"), date("d") - $i, date("Y")));
+            $days_ago         = date('d-m-Y', mktime(0, 0, 0, date("m"), date("d") - $i, date("Y")));
             list($g, $gg, $m) = explode('-', date('w-d-n', mktime(0, 0, 0, date("m"), date("d") - $i, date("Y"))));
-            $items[] = array(
-                'id' => build_umsp_url('rai_day', array($id, $days_ago)),
-                'dc:title' => $giorni[$g] . " $gg " . $mesi[$m],
+            $items[]          = array(
+                'id'         => build_umsp_url('rai_day', array($id, $days_ago)),
+                'dc:title'   => $giorni[$g] . " $gg " . $mesi[$m],
                 'upnp:class' => 'object.container',
             );
         }
@@ -139,7 +139,7 @@ function rai_section($id)
     $items = array();
 
     $itm_type = array(
-        "Rai Lancio Item" => "rai_section",
+        "Rai Lancio Item"                             => "rai_section",
         "PLR programma configuratore palinsesto Item" => "rai_program",
     );
 
@@ -148,13 +148,13 @@ function rai_section($id)
     $j = $j->{'blocchi'}[0]->{'lanci'};
 
     for ($i = 0; $i < count($j); $i++) {
-        $tmp = preg_replace("@^/(raiplay|dl)/@", "https://www.raiplay.it/$1/", $j[$i]->{'PathID'});
+        $tmp     = preg_replace("@^/(raiplay|dl)/@", "https://www.raiplay.it/$1/", $j[$i]->{'PathID'});
         $items[] = array(
-            'id' => build_umsp_url($itm_type[$j[$i]->{'original-type'}], array($tmp)),
+            'id'             => build_umsp_url($itm_type[$j[$i]->{'original-type'}], array($tmp)),
             //'id' => build_umsp_url('rai_section', array($tmp)),
-            'dc:title' => $j[$i]->{'name'},
+            'dc:title'       => $j[$i]->{'name'},
             'upnp:album_art' => str_replace("[RESOLUTION]", "480x480", $j[$i]->{'images'}->{'landscape'}),
-            'upnp:class' => 'object.container',
+            'upnp:class'     => 'object.container',
         );
     }
 
@@ -175,15 +175,15 @@ function rai_sub_section($id)
     preg_match_all("@\[([^\s]+?)\, medium\]@", $f, $art);
 
     $tit = $tit[1];
-    $ul = preg_replace("@^/(raiplay|programmi)@", "https://www.raiplay.it/$1", $ul[1]);
+    $ul  = preg_replace("@^/(raiplay|programmi)@", "https://www.raiplay.it/$1", $ul[1]);
     $art = preg_replace("@^//@", "https://", $art[1]);
 
     for ($i = 0; $i < count($tit); $i++) {
         $items[] = array(
-            'id' => build_umsp_url('rai_program', array($ul[$i])),
-            'dc:title' => $tit[$i],
+            'id'             => build_umsp_url('rai_program', array($ul[$i])),
+            'dc:title'       => $tit[$i],
             'upnp:album_art' => $art[$i],
-            'upnp:class' => 'object.container',
+            'upnp:class'     => 'object.container',
         );
     }
 
@@ -205,13 +205,13 @@ function rai_program($id)
         //_logDebug(print_r($j['Blocks'], true));
         foreach ($j['Blocks'] as $bb) {
             foreach ($bb['Sets'] as $b) {
-                $tt = $bb['Name'] == $b['Name'] ? $bb['Name'] : $bb['Name'] . ' - ' . $b['Name'];
-                $tt = strpos($tt, $j['Name']) ? $tt : $j['Name'] . " " . $tt;
+                $tt      = $bb['Name'] == $b['Name'] ? $bb['Name'] : $bb['Name'] . ' - ' . $b['Name'];
+                $tt      = strpos($tt, $j['Name']) ? $tt : $j['Name'] . " " . $tt;
                 $items[] = array(
-                    'id' => build_umsp_url('rai_program', array($b['url'])),
-                    'dc:title' => $tt,
+                    'id'             => build_umsp_url('rai_program', array($b['url'])),
+                    'dc:title'       => $tt,
                     'upnp:album_art' => '',
-                    'upnp:class' => 'object.container',
+                    'upnp:class'     => 'object.container',
                 );
             }
         }
@@ -224,8 +224,8 @@ function rai_program($id)
         //_logDebug(print_r($j['items'][0], true));
         foreach ($j['items'] as $b) {
             if ($b['type'] == 'RaiTv Media Video Item') {
-                $tt = isset($b['titoloEpisodio']) ? $b['titoloEpisodio'] : $b['name'];
-                $tt = $tt ? $tt : $b['name'];
+                $tt      = isset($b['titoloEpisodio']) ? $b['titoloEpisodio'] : $b['name'];
+                $tt      = $tt ? $tt : $b['name'];
                 $items[] = createPlayItem(
                     build_server_url(array('video_page' => $b['pathID'])),
                     //$b['titoloEpisodio'] ? $b['titoloEpisodio'] : $b['nomeProgramma'],
@@ -239,10 +239,10 @@ function rai_program($id)
         }
     } else {
         $items[] = array(
-            'id' => build_umsp_url('rai_program', array()),
-            'dc:title' => '- ERRORE -',
+            'id'             => build_umsp_url('rai_program', array()),
+            'dc:title'       => '- ERRORE -',
             'upnp:album_art' => '',
-            'upnp:class' => 'object.container',
+            'upnp:class'     => 'object.container',
         );
     }
 
@@ -273,8 +273,8 @@ function rai_day($ch, $day)
                                 7 time
                             */
 
-                            $img = preg_match("/^http/", $img[1])?$img[1]:"https://www.rai.it".$img[1];
-                            $href = preg_match("/^http/", $href[1])?$href[1]:"https://www.raiplay.it".$href[1];
+                            $img     = preg_match("/^http/", $img[1]) ? $img[1] : "https://www.rai.it" . $img[1];
+                            $href    = preg_match("/^http/", $href[1]) ? $href[1] : "https://www.raiplay.it" . $href[1];
                             $items[] = createPlayItem(
                                 build_server_url(array('video_page' => $href)),
                                 clean_title($ora[1] . ' - ' . $mm[1]),
@@ -291,7 +291,7 @@ function rai_day($ch, $day)
             }
         }
     } else {
-        _logError(__FUNCTION__." day reg-ex not found.");
+        _logError(__FUNCTION__ . " day reg-ex not found.");
     }
 
     return $items;
@@ -306,16 +306,16 @@ function rai_config($key = null, $value = null)
     $prefer_hd = getConfigValue('PREFER_HD', 1);
 
     $Items[] = array(
-        'id' => build_umsp_url('config', array('PREFER_HD', !$prefer_hd)),
-        'dc:title' => 'HD ' . ($prefer_hd ? 'on' : 'off') . ' - Seleziona per ' . ($prefer_hd ? 'disattivarlo' : 'attivarlo'),
+        'id'             => build_umsp_url('config', array('PREFER_HD', ! $prefer_hd)),
+        'dc:title'       => 'HD ' . ($prefer_hd ? 'on' : 'off') . ' - Seleziona per ' . ($prefer_hd ? 'disattivarlo' : 'attivarlo'),
         'upnp:album_art' => 'http://lh4.googleusercontent.com/-hsbvm1bQllg/Tvwgvvk5BnI/AAAAAAAAAFs/DHQp5lKE7-4/s220/HD-icon.png',
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
     $Items[] = array(
-        'id' => build_umsp_url('main_menu'),
-        'dc:title' => 'Indietro',
+        'id'             => build_umsp_url('main_menu'),
+        'dc:title'       => 'Indietro',
         'upnp:album_art' => 'http://lh3.googleusercontent.com/-dsT4ZvjCth4/TvwihbvNZLI/AAAAAAAAAF0/1Jp9s8dLNlY/s220/back_button_icon.png',
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
     return $Items;
 }
@@ -331,7 +331,7 @@ function rai_createLink($url)
                 'header' => 'User-Agent: aria2',
             ),
         ));
-        $f = file_get_contents($url, false, $sc, 0, 0);
+        $f  = file_get_contents($url, false, $sc, 0, 0);
         foreach ($http_response_header as $v) {
             if (preg_match("@Location:\s*(.+?)$@", $v, $m)) {
                 $f = $m[1];
@@ -369,8 +369,8 @@ function rai_createLink($url)
     } elseif (preg_match('@^(.+?rai\.it)\/(.+?)\/(\d+?)\/(\d+?)\.ism@', $url, $m)) {
         for ($i = 1; $i <= 4; $i++) {
             $tmp = preg_match("@geoprotetto@i", $m[2]) ? "Italy/" . $m[2] : $m[2];
-            $u = preg_replace('@\d@', $i, $m[1]) . "/" . preg_replace('@podcastmhp@', 'podcastcdn', $tmp) . "/" . $m[3] . ($phd ? '_1800' : '_800') . ".mp4";
-            $h = get_headers($u);
+            $u   = preg_replace('@\d@', $i, $m[1]) . "/" . preg_replace('@podcastmhp@', 'podcastcdn', $tmp) . "/" . $m[3] . ($phd ? '_1800' : '_800') . ".mp4";
+            $h   = get_headers($u);
             _logDebug("test: $u > " . $h[0]);
             if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
                 return $u;
@@ -393,7 +393,7 @@ function rai_getRelinker($page)
         $u = str_replace(".html?iframe", ".html?json", $page);
         _logDebug("new page: $u");
     } else {
-        $u=$page;
+        $u = $page;
     }
 
     $ff = file_get_contents($u);
@@ -416,8 +416,8 @@ function rai_getRelinker($page)
 function rai_getLink($id)
 {
     $prefix = 'http://mediapolisvod.rai.it/relinker/relinkerServlet.htm?cont=';
-    $url = $prefix . $id;
-    $h = get_headers($url, 1);
+    $url    = $prefix . $id;
+    $h      = get_headers($url, 1);
     _logDebug("test: $url > " . $h[0]);
     if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
         return rai_createLink(file_get_contents($url));
@@ -435,7 +435,7 @@ function rai_getLink($id)
             _logDebug("test: $u > " . $h[0]);
             if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
                 return $u;
-            } elseif (preg_match('@HTTP\/1\.0 504 Gateway Time-out@', $h[0])) {
+            } elseif (preg_match('/HTTP\/1\.0 504 Gateway Time-out/', $h[0])) {
                 return rai_createLink($u);
             }
         } else {
@@ -448,16 +448,16 @@ function rai_getLink($id)
 
 if (isset($_GET['video_page'])) {
     $page = $_GET['video_page'];
-    if (preg_match("@studio24|labussola@", $page)) {
+    if (preg_match("/studio24|labussola/", $page)) {
         $ff = file_get_contents($page);
         if (preg_match("@src=\"(.+?\?iframe)\&@", $ff, $mm)) {
             $page = $mm[1];
         }
     }
     $id = null;
-    if (!preg_match("@relinkerServlet\.htm\?cont\=(.+?Equal)$@", $page, $id)) {
-        $page = preg_match("@^\/\/@", $page) ? "https:" . $page : $page;
-        $page = preg_match("@^\/@", $page) ? "https://www.raiplay.it" . $page : $page;
+    if (!preg_match("/relinkerServlet\.htm\?cont\=(.+?Equal)$/", $page, $id)) {
+        $page = preg_match("/^\/\//", $page) ? "https:" . $page : $page;
+        $page = preg_match("/^\//", $page) ? "https://www.raiplay.it" . $page : $page;
         _logDebug("video_page: " . $page);
         $id = rai_getRelinker($page);
         if ($id == null) {

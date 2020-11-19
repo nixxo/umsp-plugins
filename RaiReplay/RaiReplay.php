@@ -47,30 +47,30 @@ function build_server_url($args)
 function create_item($title, $thumb, $sortBy, $category = null, $genre = null, $platform = null)
 {
     return array(
-        'id' => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
-        'dc:title' => $title,
+        'id'             => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
+        'dc:title'       => $title,
         'upnp:album_art' => $thumb,
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
 }
 
 function createPlayItem($res, $title, $desc, $album_art, $class, $protocolInfo)
 {
     return array(
-        'id' => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
-        'res' => $res,
-        'dc:title' => $title,
-        'desc' => $desc,
+        'id'             => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
+        'res'            => $res,
+        'dc:title'       => $title,
+        'desc'           => $desc,
         'upnp:album_art' => $album_art,
-        'upnp:class' => $class,
-        'protocolInfo' => $protocolInfo,
+        'upnp:class'     => $class,
+        'protocolInfo'   => $protocolInfo,
     );
 }
 
 function getConfigValue($key, $default_value)
 {
     $conf_dir = function_exists('_getUMSPConfPath') ? _getUMSPConfPath() : '/conf';
-    $config = file_get_contents($conf_dir . '/config');
+    $config   = file_get_contents($conf_dir . '/config');
     if (preg_match("/RAIREPLAY_$key='(.+)'/", $config, $matches)) {
         return trim($matches[1]);
     }
