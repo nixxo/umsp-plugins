@@ -4,21 +4,21 @@ global $logLevel;
 global $logIdent;
 $logIdent = 'La7PlugIn';
 
-$dev = true;
+$dev = false;
 
 if ($dev) {
     $logLevel = L_DEBUG;
     include_once 'la7_url_extractor.php';
 } else {
     $logLevel = L_WARNING;
-    $f = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RivediLa7/la7_url_extractor.php");
-    file_put_contents("/tmp/RivediLa7-temp.php", $f);
+    $f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RivediLa7/la7_url_extractor.php');
+    file_put_contents('/tmp/RivediLa7-temp.php', $f);
     include_once '/tmp/RivediLa7-temp.php';
 }
 
 function _pluginMain($prmQuery)
 {
-    _logDebug("plugin start");
+    _logDebug('plugin start');
     if (strpos($prmQuery, '&amp;') !== false) {
         $prmQuery = str_replace('&amp;', '&', $prmQuery);
     }
@@ -35,7 +35,14 @@ function _pluginMain($prmQuery)
 
 function build_query($f, $args = array())
 {
-    return http_build_query(array('f' => $f, 'args' => $args), '', '&amp;');
+    return http_build_query(
+        array(
+            'f'    => $f,
+            'args' => $args,
+        ),
+        '',
+        '&amp;'
+    );
 }
 
 function build_umsp_url($f, $args = array())
@@ -51,23 +58,23 @@ function build_server_url($args)
 function create_item($title, $thumb, $sortBy, $category = null, $genre = null, $platform = null)
 {
     return array(
-        'id' => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
-        'dc:title' => $title,
+        'id'             => build_umsp_url('videos', array( $sortBy, $category, $genre, $platform )),
+        'dc:title'       => $title,
         'upnp:album_art' => $thumb,
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
 }
 
-function createPlayItem($res, $title, $desc, $album_art, $class, $protocolInfo)
+function create_play_item($res, $title, $desc, $album_art, $class, $protocolInfo)
 {
     return array(
-        'id' => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
-        'res' => $res,
-        'dc:title' => $title,
-        'desc' => $desc,
+        'id'             => build_umsp_url('play', array( $res, $title, $desc, $album_art, $class, $protocolInfo )),
+        'res'            => $res,
+        'dc:title'       => $title,
+        'desc'           => $desc,
         'upnp:album_art' => $album_art,
-        'upnp:class' => $class,
-        'protocolInfo' => $protocolInfo,
+        'upnp:class'     => $class,
+        'protocolInfo'   => $protocolInfo,
     );
 }
 
