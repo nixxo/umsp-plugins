@@ -3,8 +3,8 @@
 # meta-name="Sky Video Italia"
 # meta-desc="Guarda i video di Sky Italia."
 # meta-author="nixxo"
-# meta-date="2019-10-31"
-# meta-version="1.1"
+# meta-date="2020-11-18"
+# meta-version="1.2"
 # meta-type="umsp"
 # meta-url="http://forum.wdlxtv.com/viewtopic.php?f=53&t=9406"
 # meta-filename="SkyVideoItalia.php"
@@ -20,8 +20,8 @@ $pluginInfo = array(
     'name'    => 'Sky Video Italia',
     'desc'    => 'Guarda i video di Sky Italia.',
     'author'  => 'nixxo',
-    'date'    => '2019-10-31',
-    'version' => '1.1',
+    'date'    => '2020-11-18',
+    'version' => '1.2',
     'url'     => 'http://forum.wdlxtv.com/viewtopic.php?f=53&t=9406',
     'id'      => 'SkyVideoItalia',
     'thumb'   => 'https://nst.sky.it/etc/designs/skyit/img/sky-logo.png',

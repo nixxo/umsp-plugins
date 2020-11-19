@@ -1,20 +1,20 @@
 <?php
-include_once $_SERVER['DOCUMENT_ROOT'] . '/umsp/funcs-log.php';
-include_once $_SERVER['DOCUMENT_ROOT'] . '/umsp/funcs-utility.php';
+include_once '/usr/share/umsp/funcs-log.php';
+include_once '/usr/share/umsp/funcs-utility.php';
 global $logLevel;
 global $logIdent;
 // set the logging level, one of L_ALL, L_DEBUG, L_INFO, L_WARNING, L_ERROR, L_OFF
 
 $logIdent = 'SkyVideoItaliaPlugIn';
 
-$dev = true;
+$dev = false;
 
 if ($dev) {
     $logLevel = L_DEBUG;
     include_once 'sky_url_extractor.php';
 } else {
     $logLevel = L_WARNING;
-    $f = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php");
+    $f        = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php");
     file_put_contents("/tmp/SkyVideoItalia-temp.php", $f);
     include_once '/tmp/SkyVideoItalia-temp.php';
 }
@@ -54,22 +54,22 @@ function build_server_url($args)
 function create_item($title, $thumb, $sortBy, $category = null, $genre = null, $platform = null)
 {
     return array(
-        'id' => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
-        'dc:title' => $title,
+        'id'             => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
+        'dc:title'       => $title,
         'upnp:album_art' => $thumb,
-        'upnp:class' => 'object.container',
+        'upnp:class'     => 'object.container',
     );
 }
 
 function createPlayItem($res, $title, $desc, $album_art, $class, $protocolInfo)
 {
     return array(
-        'id' => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
-        'res' => $res,
-        'dc:title' => $title,
-        'desc' => $desc,
+        'id'             => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
+        'res'            => $res,
+        'dc:title'       => $title,
+        'desc'           => $desc,
         'upnp:album_art' => $album_art,
-        'upnp:class' => $class,
-        'protocolInfo' => $protocolInfo,
+        'upnp:class'     => $class,
+        'protocolInfo'   => $protocolInfo,
     );
 }
