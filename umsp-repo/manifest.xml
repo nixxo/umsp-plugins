@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<manifest>
+    <umspplugin>
+        <name>Rai Play</name>
+        <author>nixxo</author>
+        <basefirmware>*</basefirmware>
+        <category>Television</category>
+        <date>2020-11-18</date>
+        <desc>Rivedi la programmazione dell'ultima settimana dei canali Rai direttamente dal tuo WDTV.</desc>
+        <filename>RaiReplay.php</filename>
+        <id>RaiReplay</id>
+        <rating>General</rating>
+        <thumbnail>https://upload.wikimedia.org/wikipedia/commons/c/ca/RaiPlay.svg</thumbnail>
+        <type>umsp</type>
+        <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9305</url>
+        <version>1.2</version>
+    </umspplugin>
+    <umspplugin>
+        <name>RivediLa7</name>
+        <author>nixxo</author>
+        <basefirmware>*</basefirmware>
+        <category>Television</category>
+        <date>2020-11-18</date>
+        <desc>Rivedi la programmazione dell'ultima settimana di La7 direttamente dal tuo WDTV.</desc>
+        <filename>RivediLa7.php</filename>
+        <id>RivediLa7</id>
+        <rating>General</rating>
+        <thumbnail>https://upload.wikimedia.org/wikipedia/commons/0/02/LA7_-_Logo_2011.svg</thumbnail>
+        <type>umsp</type>
+        <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9310</url>
+        <version>1.1</version>
+    </umspplugin>
+    <umspplugin>
+        <name>Sky Video Italia</name>
+        <author>nixxo</author>
+        <basefirmware>*</basefirmware>
+        <category>Television</category>
+        <date>2020-11-18</date>
+        <desc>Guarda i video di Sky Italia.</desc>
+        <filename>SkyVideoItalia.php</filename>
+        <id>SkyVideoItalia</id>
+        <rating>General</rating>
+        <thumbnail>https://nst.sky.it/etc/designs/skyit/img/sky-logo.png</thumbnail>
+        <type>umsp</type>
+        <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9406</url>
+        <version>1.2</version>
+    </umspplugin>
+    <umspplugin>
+        <name>Youtube3</name>
+        <author>mad_ady/nixxo</author>
+        <basefirmware>*</basefirmware>
+        <category>Entertainment</category>
+        <date>2020-01-30</date>
+        <desc>Youtube client based on Youtube APIv3</desc>
+        <filename>youtube3.php</filename>
+        <id>youtube3</id>
+        <rating>General</rating>
+        <thumbnail>http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s200/yt-subs-glow.png</thumbnail>
+        <type>umsp</type>
+        <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9230</url>
+        <version>0.7.8</version>
+    </umspplugin>
+    <umspplugin>
+        <name>WebTV 2</name>
+        <author>avkiev, nixxo</author>
+        <basefirmware>*</basefirmware>
+        <category>WebTV</category>
+        <date>17.02.2015 - 04.04.2018 (nixxo)</date>
+        <desc>WebTV 2 - Plays TV-translations from m3u-playlists</desc>
+        <filename>webtv2.php</filename>
+        <id>webtv2</id>
+        <rating>WebTV</rating>
+        <thumbnail>http://avkiev.16mb.com/wdtv/pic/webtv.jpg</thumbnail>
+        <type>umsp</type>
+        <url />
+        <url2>http://wdhd.ru/board/index.php?a=vtopic&amp;t=5223</url2>
+        <version>1.4</version>
+    </umspplugin>
+</manifest>

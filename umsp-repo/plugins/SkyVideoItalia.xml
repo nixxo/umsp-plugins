@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<umspplugin>
+  <name>Sky Video Italia</name>
+  <author>nixxo</author>
+  <basefirmware>*</basefirmware>
+  <category>Television</category>
+  <date>2020-11-18</date>
+  <desc>Guarda i video di Sky Italia.</desc>
+  <filename>SkyVideoItalia.php</filename>
+  <id>SkyVideoItalia</id>
+  <rating>General</rating>
+  <thumbnail>https://nst.sky.it/etc/designs/skyit/img/sky-logo.png</thumbnail>
+  <type>umsp</type>
+  <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9406</url>
+  <version>1.2</version>
+</umspplugin>

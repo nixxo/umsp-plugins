@@ -1,0 +1,1 @@
+7za.exe a -ttar -so archive.tar source_files | 7za.exe a -si archive.tgz
