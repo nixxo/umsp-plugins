@@ -5,12 +5,17 @@ global $logIdent;
 $logLevel = L_INFO;
 $logIdent = 'RaiReplayPlugIn';
 
-$f = file_get_contents("https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RaiReplay/rai_url_extractor.php");
-file_put_contents("/tmp/RaiReplay-temp.php", $f);
-include_once '/tmp/RaiReplay-temp.php';
+$dev = false;
 
-//for development
-//include_once 'rai_url_extractor.php';
+if ($dev) {
+    $logLevel = L_DEBUG;
+    include_once 'rai_url_extractor.php';
+} else {
+    $logLevel = L_WARNING;
+    $f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RaiReplay/rai_url_extractor.php');
+    file_put_contents('/tmp/RaiReplay-temp.php', $f);
+    include_once '/tmp/RaiReplay-temp.php';
+}
 
 function _pluginMain($prmQuery)
 {
