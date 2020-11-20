@@ -166,8 +166,8 @@ function sky_parse_playlist($pl)
 {
     $items = array();
     foreach ($pl['assets'] as $v) {
-        if (!preg_match('/^\d+/\d+/', $v['modify_date'], $date)) {
-            preg_match('/^\d+/\d+/', $v['create_date'], $date);
+        if (!preg_match('/^\d+\/\d+/', $v['modify_date'], $date)) {
+            preg_match('/^\d+\/\d+/', $v['create_date'], $date);
         }
 
         $items[] = createPlayItem(
