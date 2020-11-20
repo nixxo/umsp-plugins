@@ -4,7 +4,7 @@ function rai_main_menu()
 {
     _logDebug('main menu 20.03.04');
     $items    = array();
-    $channels = array("Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo");
+    $channels = array( "Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo" );
     $logos    = array(
         "https://upload.wikimedia.org/wikipedia/commons/f/fa/Rai_1_-_Logo_2016.svg", //1
         "https://upload.wikimedia.org/wikipedia/commons/9/99/Rai_2_-_Logo_2016.svg", //2
@@ -20,7 +20,7 @@ function rai_main_menu()
 
     for ($i = 0; $i < count($channels); $i++) {
         $items[] = array(
-            'id'             => build_umsp_url('rai_channel', array($channels[$i])),
+            'id'             => build_umsp_url('rai_channel', array( $channels[$i] )),
             'dc:title'       => $channels[$i],
             'upnp:album_art' => $logos[$i],
             'upnp:class'     => 'object.container',
@@ -75,24 +75,37 @@ function rai_main_menu()
 
 function clean_title($tit)
 {
-    return preg_replace("@&#039;@i", "'", $tit);
+    return str_replace("&#039;", "'", $tit);
 }
 
 function rai_channel($id)
 {
     _logDebug("channel $id");
 
-    $mesi   = array(1 => 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre');
-    $giorni = array('Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato');
+    $mesi   = array(
+        1 => 'Gennaio',
+        'Febbraio',
+        'Marzo',
+        'Aprile',
+        'Maggio',
+        'Giugno',
+        'Luglio',
+        'Agosto',
+        'Settembre',
+        'Ottobre',
+        'Novembre',
+        'Dicembre',
+    );
+    $giorni = array( 'Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato' );
 
     $items = array();
     if ($id == "RaiNews24old") {
         $ff = file_get_contents("https://studio24.blog.rainews.it/");
-        if (preg_match_all("@<a class=['\"]rsswidget['\"] href=['\"](http:\/\/studio24.blog.rainews.it/\d.+?)['\"]>(.+?)<\/a>@", $ff, $mm)) {
+        if (preg_match_all("/<a class=['\"]rsswidget['\"] href=['\"](http:\/\/studio24\.blog\.rainews\.it\/\d.+?)['\"]>(.+?)<\/a>/", $ff, $mm)) {
             //_logDebug(print_r($mm, true));
             foreach ($mm[0] as $k => $v) {
                 $items[] = createPlayItem(
-                    build_server_url(array('video_page' => $mm[1][$k])),
+                    build_server_url(array( 'video_page' => $mm[1][$k] )),
                     clean_title($mm[2][$k]),
                     urlencode($mm[1][$k]),
                     null,
@@ -103,14 +116,14 @@ function rai_channel($id)
         }
     } elseif ($id == "RaiNews24") {
         $ff = file_get_contents("https://studio24.blog.rainews.it/rss");
-        preg_match_all("@src=\"(.+?\?iframe)\&@", $ff, $mm);
-        preg_match_all("@<item>\s*<title>(.+?)</title>@", $ff, $mt);
+        preg_match_all("/src=\"(.+?\?iframe)\&/", $ff, $mm);
+        preg_match_all("/<item>\s*<title>(.+?)<\/title>/", $ff, $mt);
         if ($mm && $mt) {
             //_logDebug(print_r($mm, true));
             //_logDebug(print_r($mt, true));
             foreach ($mm[0] as $k => $v) {
                 $items[] = createPlayItem(
-                    build_server_url(array('video_page' => $mm[1][$k])),
+                    build_server_url(array( 'video_page' => $mm[1][$k] )),
                     clean_title($mt[1][$k]),
                     urlencode($mm[1][$k]),
                     null,
@@ -124,7 +137,7 @@ function rai_channel($id)
             $days_ago         = date('d-m-Y', mktime(0, 0, 0, date("m"), date("d") - $i, date("Y")));
             list($g, $gg, $m) = explode('-', date('w-d-n', mktime(0, 0, 0, date("m"), date("d") - $i, date("Y"))));
             $items[]          = array(
-                'id'         => build_umsp_url('rai_day', array($id, $days_ago)),
+                'id'         => build_umsp_url('rai_day', array( $id, $days_ago )),
                 'dc:title'   => $giorni[$g] . " $gg " . $mesi[$m],
                 'upnp:class' => 'object.container',
             );
@@ -148,9 +161,9 @@ function rai_section($id)
     $j = $j->{'blocchi'}[0]->{'lanci'};
 
     for ($i = 0; $i < count($j); $i++) {
-        $tmp     = preg_replace("@^/(raiplay|dl)/@", "https://www.raiplay.it/$1/", $j[$i]->{'PathID'});
+        $tmp     = preg_replace("/^\/(raiplay|dl)/", "https://www.raiplay.it/$1", $j[$i]->{'PathID'});
         $items[] = array(
-            'id'             => build_umsp_url($itm_type[$j[$i]->{'original-type'}], array($tmp)),
+            'id'             => build_umsp_url($itm_type[$j[$i]->{'original-type'}], array( $tmp )),
             //'id' => build_umsp_url('rai_section', array($tmp)),
             'dc:title'       => $j[$i]->{'name'},
             'upnp:album_art' => str_replace("[RESOLUTION]", "480x480", $j[$i]->{'images'}->{'landscape'}),
@@ -170,17 +183,17 @@ function rai_sub_section($id)
     //old: implementation based on the web page [DEPRECATED]
     $f = file_get_contents($id);
 
-    preg_match_all("@<div class=\"titolo\">\s*(.+?)\s*<\/div>@", $f, $tit);
-    preg_match_all("@<div\s*class=\"useraction\"\s*data-path=\"(.+?)\"@", $f, $ul);
-    preg_match_all("@\[([^\s]+?)\, medium\]@", $f, $art);
+    preg_match_all("/<div class=\"titolo\">\s*(.+?)\s*<\/div>/", $f, $tit);
+    preg_match_all("/<div\s*class=\"useraction\"\s*data-path=\"(.+?)\"/", $f, $ul);
+    preg_match_all("/\[([^\s]+?)\, medium\]/", $f, $art);
 
     $tit = $tit[1];
-    $ul  = preg_replace("@^/(raiplay|programmi)@", "https://www.raiplay.it/$1", $ul[1]);
-    $art = preg_replace("@^//@", "https://", $art[1]);
+    $ul  = preg_replace("/^\/(raiplay|programmi)/", "https://www.raiplay.it/$1", $ul[1]);
+    $art = preg_replace("/^\/\//", "https://", $art[1]);
 
     for ($i = 0; $i < count($tit); $i++) {
         $items[] = array(
-            'id'             => build_umsp_url('rai_program', array($ul[$i])),
+            'id'             => build_umsp_url('rai_program', array( $ul[$i] )),
             'dc:title'       => $tit[$i],
             'upnp:album_art' => $art[$i],
             'upnp:class'     => 'object.container',
@@ -192,7 +205,7 @@ function rai_sub_section($id)
 
 function rai_program($id)
 {
-    $id = preg_match("@^\/r@", $id) ? "http://www.raiplay.it" . $id : $id;
+    $id = preg_match("/^\/r/", $id) ? "http://www.raiplay.it" . $id : $id;
     _logDebug("program $id");
     $items = array();
 
@@ -208,7 +221,7 @@ function rai_program($id)
                 $tt      = $bb['Name'] == $b['Name'] ? $bb['Name'] : $bb['Name'] . ' - ' . $b['Name'];
                 $tt      = strpos($tt, $j['Name']) ? $tt : $j['Name'] . " " . $tt;
                 $items[] = array(
-                    'id'             => build_umsp_url('rai_program', array($b['url'])),
+                    'id'             => build_umsp_url('rai_program', array( $b['url'] )),
                     'dc:title'       => $tt,
                     'upnp:album_art' => '',
                     'upnp:class'     => 'object.container',
@@ -227,7 +240,7 @@ function rai_program($id)
                 $tt      = isset($b['titoloEpisodio']) ? $b['titoloEpisodio'] : $b['name'];
                 $tt      = $tt ? $tt : $b['name'];
                 $items[] = createPlayItem(
-                    build_server_url(array('video_page' => $b['pathID'])),
+                    build_server_url(array( 'video_page' => $b['pathID'] )),
                     //$b['titoloEpisodio'] ? $b['titoloEpisodio'] : $b['nomeProgramma'],
                     $tt,
                     $b['subtitle'],
@@ -260,7 +273,7 @@ function rai_day($ch, $day)
     //old $ff = file_get_contents("https://www.raiplay.it/guidatv/index.html?canale=$ch&giorno=$day&new");
 
     $ff = file_get_contents("https://www.raiplay.it/palinsesto/guidatv/lista/$ch/$day.html");
-    if (preg_match_all("@<li[\w\W]+?<\/li>@", $ff, $lis)) {
+    if (preg_match_all("/<li[\w\W]+?<\/li>/", $ff, $lis)) {
         foreach ($lis[0] as $li) {
             if (preg_match("/data-ora=\"(.+?)\"/", $li, $ora)) {
                 if (preg_match("/data-img=\"(.+?)\"/", $li, $img)) {
@@ -276,7 +289,7 @@ function rai_day($ch, $day)
                             $img     = preg_match("/^http/", $img[1]) ? $img[1] : "https://www.rai.it" . $img[1];
                             $href    = preg_match("/^http/", $href[1]) ? $href[1] : "https://www.raiplay.it" . $href[1];
                             $items[] = createPlayItem(
-                                build_server_url(array('video_page' => $href)),
+                                build_server_url(array( 'video_page' => $href )),
                                 clean_title($ora[1] . ' - ' . $mm[1]),
                                 urlencode(trim($mm[2])),
                                 $img,
@@ -306,7 +319,7 @@ function rai_config($key = null, $value = null)
     $prefer_hd = getConfigValue('PREFER_HD', 1);
 
     $Items[] = array(
-        'id'             => build_umsp_url('config', array('PREFER_HD', ! $prefer_hd)),
+        'id'             => build_umsp_url('config', array( 'PREFER_HD', !$prefer_hd )),
         'dc:title'       => 'HD ' . ($prefer_hd ? 'on' : 'off') . ' - Seleziona per ' . ($prefer_hd ? 'disattivarlo' : 'attivarlo'),
         'upnp:album_art' => 'http://lh4.googleusercontent.com/-hsbvm1bQllg/Tvwgvvk5BnI/AAAAAAAAAFs/DHQp5lKE7-4/s220/HD-icon.png',
         'upnp:class'     => 'object.container',
@@ -324,7 +337,7 @@ function rai_createLink($url)
 {
     _logDebug("creating link from: $url");
     $phd = getConfigValue('PREFER_HD', 1);
-    if (preg_match('@relinkerServlet\.htm@', $url)) {
+    if (preg_match('/relinkerServlet\.htm/', $url)) {
         $sc = stream_context_create(array(
             'http' => array(
                 'method' => 'GET',
@@ -333,31 +346,31 @@ function rai_createLink($url)
         ));
         $f  = file_get_contents($url, false, $sc, 0, 0);
         foreach ($http_response_header as $v) {
-            if (preg_match("@Location:\s*(.+?)$@", $v, $m)) {
+            if (preg_match("/Location:\s*(.+?)$/", $v, $m)) {
                 $f = $m[1];
             }
         }
-        preg_match("@akamaihd\.net/i/(.+?)\/(\d{5,7})_([\d,]+)\.mp4@", $f, $m);
+        preg_match("/akamaihd\.net\/i\/(.+?)\/(\d{5,7})_([\d,]+)\.mp4/", $f, $m);
         for ($i = 1; $i <= 4; $i++) {
             $u = "http://creativemedia$i.rai.it/" . $m[1] . "/" . $m[2] . ($phd ? '_1800' : '_800') . ".mp4";
             $h = get_headers($u);
             _logDebug("test: $u > " . $h[0]);
-            if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+            if (preg_match('/HTTP\/1\.[01] *200 *OK/', $h[0])) {
                 return $u;
             }
         }
         exit;
     //DEPERECATED
-    } elseif (preg_match('@replaytv\/(.+?\/\d{4,8})[\/_]@', $url, $m)) {
+    } elseif (preg_match('/replaytv\/(.+?\/\d{4,8})[\/_]/', $url, $m)) {
         for ($i = 1; $i <= 4; $i++) {
             $u = "http://creativemedia$i.rai.it/Italy/podcastmhp/replaytv/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
             $h = get_headers($u);
             _logDebug("test: $u > " . $h[0]);
-            if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+            if (preg_match('/HTTP\/1\.[01] *200 *OK/', $h[0])) {
                 return $u;
             }
         }
-    } elseif (preg_match('@replaytv_world\/(.+?\/\d{4,8})[\/_]@', $url, $m)) {
+    } elseif (preg_match('/replaytv_world\/(.+?\/\d{4,8})[\/_]/', $url, $m)) {
         for ($i = 1; $i <= 4; $i++) {
             $u = "http://creativemedia$i.rai.it/podcastmhp/replaytv_world/" . $m[1] . ($phd ? '_1800' : '_800') . ".mp4";
             $h = get_headers($u);
@@ -366,13 +379,13 @@ function rai_createLink($url)
                 return $u;
             }
         }
-    } elseif (preg_match('@^(.+?rai\.it)\/(.+?)\/(\d+?)\/(\d+?)\.ism@', $url, $m)) {
+    } elseif (preg_match('/^(.+?rai\.it)\/(.+?)\/(\d+?)\/(\d+?)\.ism/', $url, $m)) {
         for ($i = 1; $i <= 4; $i++) {
             $tmp = preg_match("@geoprotetto@i", $m[2]) ? "Italy/" . $m[2] : $m[2];
-            $u   = preg_replace('@\d@', $i, $m[1]) . "/" . preg_replace('@podcastmhp@', 'podcastcdn', $tmp) . "/" . $m[3] . ($phd ? '_1800' : '_800') . ".mp4";
+            $u   = preg_replace('/\d/', $i, $m[1]) . "/" . preg_replace('/podcastmhp/', 'podcastcdn', $tmp) . "/" . $m[3] . ($phd ? '_1800' : '_800') . ".mp4";
             $h   = get_headers($u);
             _logDebug("test: $u > " . $h[0]);
-            if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+            if (preg_match('/HTTP\/1\.[01] *200 *OK/', $h[0])) {
                 return $u;
             }
         }
@@ -419,13 +432,13 @@ function rai_getLink($id)
     $url    = $prefix . $id;
     $h      = get_headers($url, 1);
     _logDebug("test: $url > " . $h[0]);
-    if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+    if (preg_match('/HTTP\/1\.[01] *200 *OK/', $h[0])) {
         return rai_createLink(file_get_contents($url));
-    } elseif (preg_match('@HTTP\/1\.[01] *302@', $h[0])) {
+    } elseif (preg_match('/HTTP\/1\.[01] *302/', $h[0])) {
         _logDebug("direct mp4?");
-        if (preg_match('@\.mp4$@', $h['Location'])) {
+        if (preg_match('/\.mp4$/', $h['Location'])) {
             $u = $h['Location'];
-            preg_match("@_(\d{3,4})\.mp4@", $u, $m);
+            preg_match("/_(\d{3,4})\.mp4/", $u, $m);
             if (isset($m[1])) {
                 _logDebug("replacing $m[1] with 1800");
                 $u = str_replace("_$m[1].", "_1800.", $u);
@@ -433,7 +446,7 @@ function rai_getLink($id)
 
             $h = get_headers(str_replace(' ', '%20', $u));
             _logDebug("test: $u > " . $h[0]);
-            if (preg_match('@HTTP\/1\.[01] *200 *OK@', $h[0])) {
+            if (preg_match('/HTTP\/1\.[01] *200 *OK/', $h[0])) {
                 return $u;
             } elseif (preg_match('/HTTP\/1\.0 504 Gateway Time-out/', $h[0])) {
                 return rai_createLink($u);
@@ -450,7 +463,7 @@ if (isset($_GET['video_page'])) {
     $page = $_GET['video_page'];
     if (preg_match("/studio24|labussola/", $page)) {
         $ff = file_get_contents($page);
-        if (preg_match("@src=\"(.+?\?iframe)\&@", $ff, $mm)) {
+        if (preg_match("/src=\"(.+?\?iframe)\&/", $ff, $mm)) {
             $page = $mm[1];
         }
     }

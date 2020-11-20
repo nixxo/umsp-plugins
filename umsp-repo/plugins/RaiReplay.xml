@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <umspplugin>
-  <name>Rai Play</name>
-  <author>nixxo</author>
-  <basefirmware>*</basefirmware>
-  <category>Television</category>
-  <date>2020-11-18</date>
-  <desc>Rivedi la programmazione dell'ultima settimana dei canali Rai direttamente dal tuo WDTV.</desc>
-  <filename>RaiReplay.php</filename>
-  <id>RaiReplay</id>
-  <rating>General</rating>
-  <thumbnail>https://upload.wikimedia.org/wikipedia/commons/c/ca/RaiPlay.svg</thumbnail>
-  <type>umsp</type>
-  <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9305</url>
-  <version>1.2</version>
+    <name>Rai Play</name>
+    <desc>Rivedi la programmazione dell'ultima settimana dei canali Rai direttamente dal tuo WDTV.</desc>
+    <author>nixxo</author>
+    <date>2020-11-18</date>
+    <version>1.2</version>
+    <type>umsp</type>
+    <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9305</url>
+    <filename>RaiReplay.php</filename>
+    <id>RaiReplay</id>
+    <basefirmware>*</basefirmware>
+    <thumbnail>https://upload.wikimedia.org/wikipedia/commons/c/ca/RaiPlay.svg</thumbnail>
+    <rating>General</rating>
+    <category>Television</category>
 </umspplugin>

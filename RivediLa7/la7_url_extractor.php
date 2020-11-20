@@ -23,7 +23,7 @@ function la7_main_menu()
 
 function clean_title($tit)
 {
-    return preg_replace('@&#039;@i', "'", $tit);
+    return str_replace("&#039;", "'", $tit);
 }
 
 function la7_day($id)
@@ -72,7 +72,7 @@ function la7_video($page)
     $ff = file_get_contents(PROXY . urlencode($page));
     if (preg_match('/"m3u8"\s*:\s*".+?content\/entry\/.+_(0_.+?)_\d,\.mp4\.csmil\/master\.m3u8"/', $ff, $m)) {
         $dl = "http://nkdam.iltrovatore.it/p/103/sp/10300/serveFlavor/flavorId/$m[1]";
-        _logDebug("playing m3u8: $dl");
+        _logDebug("playing: $dl");
         ob_start();
         header('Content-type: video/mp4');
         header('Location: ' . $dl);

@@ -8,7 +8,7 @@ function _pluginMain($arg)
     ini_set("user_agent", "Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0 WDLXTV");
     $list = $plug = "";
     parse_str(html_entity_decode($arg, 0, "UTF-8"));
-    preg_match_all('#WEBTV_(.+)=\'(.+)\'#i', file_get_contents("/conf/config"), $m);
+    preg_match_all('/WEBTV_(.+)=\'(.+)\'/i', file_get_contents("/conf/config"), $m);
     $par = array_combine($m[1], $m[2]);
     extract($par);
 
@@ -57,7 +57,7 @@ function _pluginMain($arg)
     }
 
     $s = str_replace("\r", "", $s);
-    $p = '#EXTINF([^,]+),(.+)(\n|\n\n)(http[s]*://)(.+)(\n|\n\n)#iU';
+    $p = '/EXTINF([^,]+),(.+)(\n|\n\n)(http[s]*:\/\/)(.+)(\n|\n\n)/iU';
     preg_match_all($p, $s, $m, PREG_SET_ORDER);
     _log("loading playlist: $list");
     foreach ($m as $v) {
@@ -75,7 +75,7 @@ function _pluginMain($arg)
         }
 
         if (strpos($ext, ":-1") !== false || strpos($ext, ": -1") !== false) {
-            $url=urlencode($url);
+            $url = urlencode($url);
             $url = "http://127.0.0.1/umsp/plugins/webtv2/webtv2.php?url=$url&buf=$buf";
         }
 
@@ -86,7 +86,7 @@ function _pluginMain($arg)
 
 $url = $buf = "";
 parse_str($_SERVER["QUERY_STRING"]);
-$url=urldecode($url);
+$url = urldecode($url);
 PlayStream($url, $buf);
 
 function PlayStream($url, $buf)
@@ -100,15 +100,11 @@ function PlayStream($url, $buf)
         $buf = 1000000;
     }
 
-    if (preg_match("~master\.m3u8~", $url)) {
+    if (preg_match("/master\.m3u8/", $url)) {
         _log("HLS detected");
         return PlayM3U8_HLS($url, 1000000);
     }
-    if (preg_match("~seedr\.cc/hls_playlist~", $url)) {
-        _log("HLS detected");
-        return PlayM3U8_HLS($url, $buf);
-    }
-    if (preg_match("~\.m3u8.+~", $url)) {
+    if (preg_match("/\.m3u8.+/", $url)) {
         return PlayM3U8($url, $buf);
     }
     if (substr($url, -4) == "m3u8") {
@@ -138,7 +134,7 @@ function PlayStream($url, $buf)
         _log("PlayStream.fsockopen - $errstr ($errno)");
         return;
     }
-    $s = "GET $path HTTP/1.1\r\n";
+    $s  = "GET $path HTTP/1.1\r\n";
     $s .= "User-Agent: INTEL_NMPR/2.1 DLNADOC/1.50 dma/3.0 alphanetworks\r\n";
     $s .= "Host: $host\r\n";
     $s .= "Cache-Control: no-cache\r\n";
@@ -155,10 +151,10 @@ function PlayStream($url, $buf)
         }
 
         list($tag, $url) = explode(": ", $s, 2);
-        $url = trim($url);
+        $url             = trim($url);
         if (stristr($tag, "Location")) {
-            $url=urlencode($url);
-            $s = "Location: http://127.0.0.1/umsp/plugins/webtv2/webtv2.php?url=$url&buf=$buf\r\n";
+            $url = urlencode($url);
+            $s   = "Location: http://127.0.0.1/umsp/plugins/webtv2/webtv2.php?url=$url&buf=$buf\r\n";
         }
 
         header($s);
@@ -171,7 +167,7 @@ function PlayStream($url, $buf)
 
 function PlayM3U8_HLS($url, $buf)
 {
-    preg_match('~#EXT-X-STREAM-INF:(.*)\n(.*)\n~', file_get_contents($url), $m);
+    preg_match('/#EXT-X-STREAM-INF:(.*)\n(.*)\n/', file_get_contents($url), $m);
     _log("HLS url: $m[2]");
     return PlayM3U8($m[2], $buf);
 }
@@ -188,10 +184,10 @@ function PlayM3U8($url, $buf)
     header("Cache-control: no-cache");
     header("Connection: Close");
     $path = substr($url, 0, strrpos($url, "/") + 1);
-    $tim = microtime(1);
+    $tim  = microtime(1);
     while (true) {
         set_time_limit(60);
-        preg_match_all('~#EXTINF:(.*)\n(.*)\n~', file_get_contents($url), $m);
+        preg_match_all('/#EXTINF:(.*)\n(.*)\n/', file_get_contents($url), $m);
         $n = count($m[0]);
         for ($i = 0; $i < $n; $i++) {
             $s = trim($m[2][$i]);
@@ -201,11 +197,11 @@ function PlayM3U8($url, $buf)
             }
             $p = $s;
 
-            if (!preg_match("~^http~", $p)) {
+            if (!preg_match("/^http/", $p)) {
                 $p = $path . $p;
             }
 
-            preg_match("~\/([^\/]+?)(\?.+?)*$~", $p, $fn);
+            preg_match("/\/([^\/]+?)(\?.+?)*$/", $p, $fn);
 
             _log("* $p");
             set_error_handler("error_handler");
@@ -231,9 +227,9 @@ function PlayM3U8($url, $buf)
             }
             //_log("$i/$n: $fn[1]");
             //echo $c;
-            $tim += intval($m[1][$i]);
+            $tim  += intval($m[1][$i]);
             $pred2 = $pred;
-            $pred = $s;
+            $pred  = $s;
         }
     }
     exit;
@@ -241,7 +237,7 @@ function PlayM3U8($url, $buf)
 
 function Container($id, $title, $thumb = " ", $single = false)
 {
-    $id = trim($id);
+    $id    = trim($id);
     $title = trim($title);
     if ($single) {
         $title = " " . $title;
@@ -256,21 +252,23 @@ function Container0($id, $title, $thumb = " ")
         $thumb = "http://avkiev.16mb.com/wdtv/pic$thumb";
     }
 
-    return array("id" => "umsp://plugins/webtv2?" . htmlentities($id, 0, "UTF-8"),
-        "dc:title" => $title,
+    return array(
+        "id"             => "umsp://plugins/webtv2?" . htmlentities($id, 0, "UTF-8"),
+        "dc:title"       => $title,
         "upnp:album_art" => $thumb,
-        "upnp:class" => "object.container",
+        "upnp:class"     => "object.container",
     );
 }
 
 function Item($url, $tit, $thumb = "")
 {
-    return array("id" => "umsp://plugins/webtv2?url=" . htmlentities($url, 0, "UTF-8"),
-        "dc:title" => $tit,
-        "res" => $url,
+    return array(
+        "id"             => "umsp://plugins/webtv2?url=" . htmlentities($url, 0, "UTF-8"),
+        "dc:title"       => $tit,
+        "res"            => $url,
         "upnp:album_art" => $thumb,
-        "upnp:class" => "object.item.videoItem",
-        "protocolInfo" => "http-get:*:*:*",
+        "upnp:class"     => "object.item.videoItem",
+        "protocolInfo"   => "http-get:*:*:*",
     );
 }
 
@@ -291,7 +289,7 @@ function stf($d)
     ob_start();
     var_dump($d);
     $data = ob_get_clean();
-    $fp = fopen("/tmp/umsp-log.txt", "a+");
+    $fp   = fopen("/tmp/umsp-log.txt", "a+");
     fwrite($fp, $data);
     fclose($fp);
 }

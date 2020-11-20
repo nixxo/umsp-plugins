@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <umspplugin>
-  <name>Youtube3</name>
-  <author>mad_ady/nixxo</author>
-  <basefirmware>*</basefirmware>
-  <category>Entertainment</category>
-  <date>2020-11-15</date>
-  <desc>Youtube client based on Youtube APIv3</desc>
-  <filename>youtube3.php</filename>
-  <id>youtube3</id>
-  <rating>General</rating>
-  <thumbnail>http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s200/yt-subs-glow.png</thumbnail>
-  <type>umsp</type>
-  <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9230</url>
-  <version>0.7.8</version>
+    <name>Youtube3</name>
+    <desc>Youtube client based on Youtube APIv3</desc>
+    <author>mad_ady/nixxo</author>
+    <date>2020-11-15</date>
+    <version>0.7.8</version>
+    <type>umsp</type>
+    <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9230</url>
+    <filename>youtube3.php</filename>
+    <id>youtube3</id>
+    <basefirmware>*</basefirmware>
+    <thumbnail>http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s200/yt-subs-glow.png</thumbnail>
+    <rating>General</rating>
+    <category>Entertainment</category>
 </umspplugin>

@@ -13,8 +13,8 @@ if (defined("WECVERSION") && WECVERSION >= 3) {
 
     $key = strtoupper("{$id}_DESC");
     webtv2($key, $descr, $desc, null, WECT_DESC);
-    webtv2($id, "Enable '$eman' UMSP plugin", "Включить '$eman' UMSP плагин", null, WECT_BOOL, array("off", "on"));
-    $wec_options[$id]["readhook"] = wec_umspwrap_read;
+    webtv2($id, "Enable '$eman' UMSP plugin", "Включить '$eman' UMSP плагин", null, WECT_BOOL, array( "off", "on" ));
+    $wec_options[$id]["readhook"]  = wec_umspwrap_read;
     $wec_options[$id]["writehook"] = wec_umspwrap_write;
 
     webtv2("LISTS", "Count of playlists", "Количество плейлистов", "1", WECT_INT);
@@ -33,15 +33,16 @@ function webtv2($key, $desc, $longdesc, $def = "", $typ = WECT_TEXT, $avv = null
         $key = "WEBTV_$key";
     }
 
-    $wec_options["$key"] = array("configname" => $key,
+    $wec_options["$key"] = array(
+        "configname" => $key,
         "configdesc" => $pic . $desc,
-        "longdesc" => $longdesc,
-        "group" => $eman,
-        "type" => $typ,
-        "page" => WECP_UMSP,
+        "longdesc"   => $longdesc,
+        "group"      => $eman,
+        "type"       => $typ,
+        "page"       => WECP_UMSP,
         "displaypri" => $pri++,
         "defaultval" => $def,
-        "availval" => $avv,
+        "availval"   => $avv,
     );
 }
 

@@ -36,7 +36,10 @@ function _pluginMain($prmQuery)
 
 function build_query($f, $args = array())
 {
-    return http_build_query(array('f' => $f, 'args' => $args), '', '&amp;');
+    return http_build_query(array(
+        'f'    => $f,
+        'args' => $args,
+    ), '', '&amp;');
 }
 
 function build_umsp_url($f, $args = array())
@@ -52,7 +55,7 @@ function build_server_url($args)
 function create_item($title, $thumb, $sortBy, $category = null, $genre = null, $platform = null)
 {
     return array(
-        'id'             => build_umsp_url('videos', array($sortBy, $category, $genre, $platform)),
+        'id'             => build_umsp_url('videos', array( $sortBy, $category, $genre, $platform )),
         'dc:title'       => $title,
         'upnp:album_art' => $thumb,
         'upnp:class'     => 'object.container',
@@ -62,7 +65,7 @@ function create_item($title, $thumb, $sortBy, $category = null, $genre = null, $
 function createPlayItem($res, $title, $desc, $album_art, $class, $protocolInfo)
 {
     return array(
-        'id'             => build_umsp_url('play', array($res, $title, $desc, $album_art, $class, $protocolInfo)),
+        'id'             => build_umsp_url('play', array( $res, $title, $desc, $album_art, $class, $protocolInfo )),
         'res'            => $res,
         'dc:title'       => $title,
         'desc'           => $desc,

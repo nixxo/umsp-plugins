@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <umspplugin>
-    <name>WebTV 2</name>
-    <author>avkiev, nixxo</author>
-    <basefirmware>*</basefirmware>
-    <category>WebTV</category>
-    <date>17.02.2015 - 04.04.2018 (nixxo)</date>
-    <desc>WebTV 2 - Plays TV-translations from m3u-playlists</desc>
-    <filename>webtv2.php</filename>
     <id>webtv2</id>
-    <rating>WebTV</rating>
-    <thumbnail>http://avkiev.16mb.com/wdtv/pic/webtv.jpg</thumbnail>
-    <type>umsp</type>
-    <url />
-    <url2>http://wdhd.ru/board/index.php?a=vtopic&amp;t=5223</url2>
+    <name>WebTV2</name>
+    <desc>WebTV2 - Plays TV-translations from m3u-playlists</desc>
+    <author>avkiev, nixxo</author>
+    <date>17.02.2015 - 04.04.2018 (nixxo)</date>
     <version>1.4</version>
+    <type>umsp</type>
+    <url2>http://wdhd.ru/board/index.php?a=vtopic&amp;t=5223</url2>
+    <filename>webtv.php</filename>
+    <basefirmware>*</basefirmware>
+    <thumbnail>http://avkiev.16mb.com/wdtv/pic/webtv.jpg</thumbnail>
+    <rating>WebTV</rating>
+    <category>WebTV</category>
 </umspplugin>

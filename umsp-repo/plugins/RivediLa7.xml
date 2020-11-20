@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <umspplugin>
-  <name>RivediLa7</name>
-  <author>nixxo</author>
-  <basefirmware>*</basefirmware>
-  <category>Television</category>
-  <date>2020-11-18</date>
-  <desc>Rivedi la programmazione dell'ultima settimana di La7 direttamente dal tuo WDTV.</desc>
-  <filename>RivediLa7.php</filename>
-  <id>RivediLa7</id>
-  <rating>General</rating>
-  <thumbnail>https://upload.wikimedia.org/wikipedia/commons/0/02/LA7_-_Logo_2011.svg</thumbnail>
-  <type>umsp</type>
-  <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9310</url>
-  <version>1.1</version>
+    <name>RivediLa7</name>
+    <desc>Rivedi la programmazione dell'ultima settimana di La7 direttamente dal tuo WDTV.</desc>
+    <author>nixxo</author>
+    <date>2020-11-18</date>
+    <version>1.1</version>
+    <type>umsp</type>
+    <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9310</url>
+    <filename>RivediLa7.php</filename>
+    <id>RivediLa7</id>
+    <basefirmware>*</basefirmware>
+    <thumbnail>https://upload.wikimedia.org/wikipedia/commons/0/02/LA7_-_Logo_2011.svg</thumbnail>
+    <rating>General</rating>
+    <category>Television</category>
 </umspplugin>

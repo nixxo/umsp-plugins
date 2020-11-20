@@ -17,13 +17,13 @@
 global $pluginInfo;
 
 $pluginInfo = array(
-    'name'      => 'Youtube3',
-    'desc'      => 'Youtube client based on Youtube APIv3',
-    'author'    => 'mad_ady/nixxo',
-    'date'      => '2020-11-15',
-    'version'   => '0.7.8',
-    'url'       => 'http://forum.wdlxtv.com/viewtopic.php?f=53&t=9230',
-    'id'        => 'youtube3',
-    'thumb'     => 'http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s60/yt-subs-glow.png',
-    'art'       => 'http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s200/yt-subs-glow.png',
+    'name'    => 'Youtube3',
+    'desc'    => 'Youtube client based on Youtube APIv3',
+    'author'  => 'mad_ady/nixxo',
+    'date'    => '2020-11-15',
+    'version' => '0.7.8',
+    'url'     => 'http://forum.wdlxtv.com/viewtopic.php?f=53&t=9230',
+    'id'      => 'youtube3',
+    'thumb'   => 'http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s60/yt-subs-glow.png',
+    'art'     => 'http://lh6.ggpht.com/_xJcSFBlLg_Y/TRtgZ_ZDrbI/AAAAAAAAAKU/g6O4hWpfTPg/s200/yt-subs-glow.png',
 );
