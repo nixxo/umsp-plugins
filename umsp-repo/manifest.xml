@@ -46,6 +46,21 @@
     <category>Television</category>
 </umspplugin>
 <umspplugin>
+    <name>Web-based UMSP Remote Control</name>
+    <desc>Web-based UMSP Remote Control: Control UMSP plugins via a web browser</desc>
+    <author>TroNik</author>
+    <date>2014-01-16</date>
+    <version>0.0.4</version>
+    <type>umsp</type>
+    <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=8727</url>
+    <filename>umsp-remote-control.php</filename>
+    <id>umsp-remote-control</id>
+    <basefirmware>*</basefirmware>
+    <thumbnail>http://lh3.googleusercontent.com/-4KqipMYN9d0/UsqKHormcaI/AAAAAAAAAfg/xlQBnZyz2GQ/s60/Computer-Remote-control-icon.png</thumbnail>
+    <rating>General</rating>
+    <category>Tools</category>
+</umspplugin>
+<umspplugin>
     <id>webtv2</id>
     <name>WebTV2</name>
     <desc>WebTV2 - Plays TV-translations from m3u-playlists</desc>
