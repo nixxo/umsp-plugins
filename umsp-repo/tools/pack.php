@@ -18,9 +18,15 @@ while (false !== ( $entry = $d->read() )) {
         echo $entry . "\n";
 
         //create tgz package
-        $cmd = "7z a -ttar -so \"$entry.tar\" \"$current\\*.php\" | 7z a -si \"$out$entry.tgz\"";
+        $cmd = "7z a -ttar \"$out$entry.tar\" \"$current\" -xr!ftpsync.settings";
+        shell_exec($cmd);
+        //var_dump($cmd);
+        //exit;
+
+        $cmd = "7z a \"$out$entry.tgz\" \"$out$entry.tar\"";
         unlink("$out$entry.tgz");
         shell_exec($cmd);
+        unlink("$out$entry.tar");
 
         //generate xml
         $in = file_get_contents($current . '\\info.php');
