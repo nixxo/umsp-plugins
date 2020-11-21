@@ -52,6 +52,17 @@ _logInfo("Downloading through $url");
 
 _DownloadThru($url);
 
+function _TestDownload($url)
+{
+    $size    = 500000;
+    $content = file_get_contents($url, false, null, 0, $size);
+    if ($size == strlen($content)) {
+        return true;
+    }
+    _logError("_TestDownload -> size downloaded wrong:" . strlen($content));
+    return false;
+}
+
 function _DownloadThru($url)
 {
     foreach (array( ' ', "\t", "\n" ) as $char) {
@@ -191,13 +202,11 @@ function _getYTVideo($id)
         '720P'  => 22,
         '480P'  => 35,
         '360P'  => 18,
-        '240P'  => 34,
-        '270P'  => 34,
     );
     //keep the same array, but without the P's
     $numeric_quality_map = array();
     foreach ($quality_map as $key => $value) {
-        if (preg_match('/([0-9]+)P/', $key, $m)) {
+        if (preg_match('/([0-9]+)P/i', $key, $m)) {
             $numeric_quality_map[ $m[1] ] = $value;
         }
     }
@@ -388,11 +397,17 @@ function _getYTVideo($id)
     //standard, fast option
     if (array_key_exists($fmt, $hash_qlty_url)) {
         //we found the quality we were looking for, so we can return the decoded URL
-        return urldecode($hash_qlty_url[ $fmt ]);
+
+        //test download to prevent http 503 errors that crashes the player
+        if (_TestDownload(urldecode($hash_qlty_url[ $fmt ]))) {
+            return urldecode($hash_qlty_url[ $fmt ]);
+        }
+        _logWarning("_getYTVideo -> Failed download test for format $fmt, using 18 instead.");
+        return urldecode($hash_qlty_url[18]);
     } else {
         _logWarning("_getYTVideo -> Unable to find url map for quality $fmt ($resolution)");
         //select a different quality - prefer lower quality than desired
-            krsort($numeric_quality_map, SORT_NUMERIC); //sort key high to low
+        krsort($numeric_quality_map, SORT_NUMERIC); //sort key high to low
         foreach ($numeric_quality_map as $key => $value) {
             if ($key >= $numeric_resolution) {
                 continue;
@@ -405,7 +420,7 @@ function _getYTVideo($id)
         }
 
         //if no lower quality is found, prefer a higher quality than desired
-            ksort($numeric_quality_map, SORT_NUMERIC); //sort key low to high
+        ksort($numeric_quality_map, SORT_NUMERIC); //sort key low to high
         foreach ($numeric_quality_map as $key => $value) {
             if ($key <= $numeric_resolution) {
                 continue;

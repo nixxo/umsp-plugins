@@ -109,4 +109,26 @@ if ((defined('WECVERSION')) && (WECVERSION >= 3)) {
         'defaultval' => '',
         'currentval' => '',
     );
+
+    $wec_options['YOUTUBE_QUALITY'] = array(
+        'configname' => 'YOUTUBE_QUALITY',
+        'configdesc' => 'Youtube video quality [360p, 720p or 1080p]',
+        'longdesc'   => 'Use 360p, 720p or 1080p',
+        'group'      => $pluginInfo['name'],
+        'type'       => WECT_INT,
+        'page'       => WECP_UMSP,
+        'defaultval' => '',
+        'currentval' => '',
+    );
+
+    $wec_options['YOUTUBE_DEVELOPER_KEY'] = array(
+        'configname' => 'YOUTUBE_DEVELOPER_KEY',
+        'configdesc' => 'Youtube api developer key. Go <a href="https://console.developers.google.com/apis/dashboard">here</a> to generate one.',
+        'longdesc'   => 'Google youtube api key',
+        'group'      => $pluginInfo['name'],
+        'type'       => WECT_INT,
+        'page'       => WECP_UMSP,
+        'defaultval' => '',
+        'currentval' => '',
+    );
 }

@@ -34,8 +34,9 @@ set_time_limit(0);
 
 define('PLUGIN_NAME', str_replace('.php', '', basename(__file__)));
 define('PROXY_URL', 'http://' . $_SERVER['SERVER_ADDR'] . ':' . $_SERVER['SERVER_PORT'] . '/umsp/plugins/' . PLUGIN_NAME . '/' . PLUGIN_NAME . '-proxy.php');
-//Youtube simple-api v3 key. Don't use it for other projects, please
-define('DEVELOPER_KEY', 'AIzaSyDDGgNfJ43o8ssRGwdZvwdyg8FGiV_8kT8');
+
+$api = getConfigValue('YOUTUBE_DEVELOPER_KEY');
+define('DEVELOPER_KEY', $api);
 
 global $nextPage;
 $nextPage = '';
@@ -746,4 +747,22 @@ function showErrorMessage($message, &$retMediaItems)
         'upnp:class'     => 'object.container',
         'upnp:album_art' => 'http://lh5.googleusercontent.com/-oehaIv-ybxE/ThnfXJd_IyI/AAAAAAAAPCU/EBi8Gyns8zA/stop.png',
     );
+}
+
+function getConfigValue($key)
+{
+    $configFile = ( function_exists('_getUMSPConfPath') ? _getUMSPConfPath() : '/conf' ) . '/config';
+    $fh         = fopen($configFile, 'r');
+    while (!feof($fh)) {
+        //read line by line
+        $line = fgets($fh);
+        //look for the variable we're searching
+        preg_match("/^$key=(?:\'|\")?(.*)(?:\'|\")$/", $line, $result);
+        if (isset($result[1])) {
+            fclose($fh);
+            return $result[1]; //we have a match;
+        }
+    }
+    fclose($fh);
+    return null;
 }
