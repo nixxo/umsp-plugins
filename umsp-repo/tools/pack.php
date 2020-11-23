@@ -15,19 +15,16 @@ while (false !== ( $entry = $d->read() )) {
          $current = $dir . '\\' . $entry;
     if (( array_search($entry, $exclude) === false )
     && ( filetype($current) == 'dir' )) {
-        echo $entry . "\n";
+        if (ask($entry)) {
+            //create tgz package
+            $cmd = "7z a -ttar \"$out$entry.tar\" \"$current\" -xr!ftpsync.settings";
+            shell_exec($cmd);
 
-        //create tgz package
-        $cmd = "7z a -ttar \"$out$entry.tar\" \"$current\" -xr!ftpsync.settings";
-        shell_exec($cmd);
-        //var_dump($cmd);
-        //exit;
-
-        $cmd = "7z a \"$out$entry.tgz\" \"$out$entry.tar\"";
-        unlink("$out$entry.tgz");
-        shell_exec($cmd);
-        unlink("$out$entry.tar");
-
+            $cmd = "7z a \"$out$entry.tgz\" \"$out$entry.tar\"";
+            unlink("$out$entry.tgz");
+            shell_exec($cmd);
+            unlink("$out$entry.tar");
+        }
         //generate xml
         $in = file_get_contents($current . '\\info.php');
         preg_match_all("/#\s*meta-(.+?)=\"(.+?)\"/", $in, $plugin);
@@ -50,3 +47,12 @@ file_put_contents($out . '..\\manifest.xml', "$x$full");
 //save php list
 $list = str_replace('#####', $list, $pre);
 file_put_contents($out . '..\\plugins.php', $list);
+
+function ask($id)
+{
+    echo "Pack $id? y/n: ";
+    $inp = trim(fgets(STDIN));
+    if (preg_match('/^y$/i', $inp)) {
+        return true;
+    }return false;
+}
