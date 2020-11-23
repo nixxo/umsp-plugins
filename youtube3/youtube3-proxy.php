@@ -6,7 +6,6 @@ global $logLevel;
 $logLevel = L_WARNING;
 global $logIdent;
 $logIdent = 'YTSubscriptions-proxy';
-$cookie   = '';
 
 //Turn the power led on if desired
 if (getConfigValue('PROXY_LED') == 'ON') {
@@ -54,7 +53,7 @@ _DownloadThru($url);
 
 function _TestDownload($url)
 {
-    $size    = 500000;
+    $size    = 250000;
     $content = file_get_contents($url, false, null, 0, $size);
     if ($size == strlen($content)) {
         return true;
@@ -97,23 +96,16 @@ function _GetFile($prmHost, $prmPath, $prmPort, $numberOfTries = 0)
     } else {
         // prepare the header
         $method = $_SERVER['REQUEST_METHOD']; //MediaPlayer knows what to request
-        $out    = "$method " . $prmPath . ' HTTP/1.1' . "\r\n";
-        $out   .= 'Host: ' . $prmHost . "\r\n";
+        $out    = "$method $prmPath HTTP/1.1\r\n";
+        $out   .= "Host: $prmHost\r\n";
         $out   .= "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:14.0) Gecko/20100101 Firefox/14.0.1\r\n";
         $out   .= "Accept: */*\r\n";
-        #       $out .= "Accept-Language: en-us;q=0.7,en;q=0.3\r\n";
-        #       $out .= "Accept-Encoding: gzip,deflate\r\n";
-        #       $out .= "Connection: keep-alive\r\n";
-        #       $out .= "Accept-Charset: windows-1251,utf-8;q=0.7,*;q=0.7\r\n";
         if (isset($_SERVER['CONTENT_LENGTH'])) { //add content-length if the MediaPlayer specifies it
             $out .= 'Content-Length: ' . $_SERVER['CONTENT_LENGTH'] . "\r\n";
         }
         if (isset($_SERVER['HTTP_RANGE'])) { //jump to the specific range if the MediaPlayer specifies it (when navigating)
             $out .= 'Range: ' . $_SERVER['HTTP_RANGE'] . "\r\n";
         }
-        #       if(isset ($GLOBALS['cookie'])){
-        #           $out .= "Cookie: ".$GLOBALS['cookie']."\r\n";
-        #       }
 
         $out .= "\r\n";
 
@@ -229,12 +221,19 @@ function _getYTVideo($id)
     _logDebug("_getYTVideo -> Asking for file_get_contents(http://www.youtube.com/watch?v={$id})");
 
     $html = file_get_contents("http://www.youtube.com/watch?v={$id}");
-    //first, save the cookie they give us
-    for ($i = 0; $i < count($http_response_header); $i++) {
-        if (preg_match('/Set-Cookie: (.*)/', $http_response_header[ $i ], $result)) {
-            $GLOBALS['cookie'] .= $result[1] . '; ';
-            _logDebug('Set cookie to ' . $GLOBALS['cookie']);
+
+    //check video availability before starting processing anything else
+    if (preg_match('/"playabilityStatus":{"status":"(\w+)"/', $hmtl, $status)) {
+        if ($status[1] == 'UNPLAYABLE') {
+            if (preg_match('/"reason":"(.+?)"/', $html, $reason)) {
+                $reason = $reason[1];
+            } else {
+                $reason = "Video not available";
+            }
+            _logError("Video id:$id - $reason");
+            exit;
         }
+        _logInfo("Video id:$is status is $status[1]");
     }
 
     //code added by nixxo:
@@ -283,22 +282,24 @@ function _getYTVideo($id)
     //in order to decode the signature of signed videos.
     $ytCipher = null;
     // something like... https://s.ytimg.com/yts/jsbin/player-it_IT-vflPnd0Bl/base.js
+    // or https://www.youtube.com/s/player/a3726513/player_ias.vflset/it_IT/base.js
     if (preg_match('/"js(?:Url)?"\s*:\s*"(.*?)"/', $html, $sc)) {
         $tmp         = stripslashes($sc[1]);
         $ytScriptURL = preg_match('/^\/\//', $tmp) ? 'https:' . $tmp : 'https://www.youtube.com' . $tmp;
         _logInfo("jsPlayer_url: $ytScriptURL");
-        $ytScriptSrc = file_get_contents($ytScriptURL);
-        if ($ytScriptSrc) {
-            $ytCipher = ytGrabCipher($ytScriptSrc);
-            _logInfo("ytCipher is: $ytCipher");
+        if (!$ytCipher = getCypher($ytScriptURL)) {
+            $ytScriptSrc = file_get_contents($ytScriptURL);
+            if ($ytScriptSrc) {
+                $ytCipher = ytGrabCipher($ytScriptSrc);
+                saveCypher($ytScriptURL, $ytCipher);
+            }
         }
+        _logInfo("ytCipher is: $ytCipher");
     } else {
         _logError('No js player found.');
     }
     //end of added code.
 
-    //_logDebug("HTML file: ".$html);
-    //
     //new format string 2019-09
     preg_match('/formats.*?:(\[(.+?)\])/', $html, $new_fmt);
     //old format url map: DEPRECATED???
@@ -399,11 +400,13 @@ function _getYTVideo($id)
         //we found the quality we were looking for, so we can return the decoded URL
 
         //test download to prevent http 503 errors that crashes the player
-        if (_TestDownload(urldecode($hash_qlty_url[ $fmt ]))) {
-            return urldecode($hash_qlty_url[ $fmt ]);
+        if (getConfigValue('YOUTUBE_TEST_DOWNLOAD') == 'ON') {
+            if (!_TestDownload(urldecode($hash_qlty_url[ $fmt ]))) {
+                _logWarning("_getYTVideo -> [$id] Failed download test for format $fmt, using 18 instead.");
+                return urldecode($hash_qlty_url[18]);
+            }
         }
-        _logWarning("_getYTVideo -> Failed download test for format $fmt, using 18 instead.");
-        return urldecode($hash_qlty_url[18]);
+        return urldecode($hash_qlty_url[ $fmt ]);
     } else {
         _logWarning("_getYTVideo -> Unable to find url map for quality $fmt ($resolution)");
         //select a different quality - prefer lower quality than desired
@@ -568,6 +571,36 @@ function getConfigValue($key)
     return null;
 }
 
+
+function tempFile()
+{
+    $tmp = "/tmp/yt3.cyphers.data";
+    if (!file_exists($tmp)) {
+        file_put_contents($tmp, "");
+    }
+    return $tmp;
+}
+
+function getCypher($pid)
+{
+    $file = tempFile();
+    $f    = file_get_contents($file);
+    $f    = json_decode($f, true);
+    if (isset($f[md5($pid)])) {
+        return $f[$pid];
+    }
+    return false;
+}
+
+function saveCypher($pid, $cyper)
+{
+    $file         = tempFile();
+    $f            = file_get_contents($file);
+    $f            = json_decode($f, true);
+    $f[md5($pid)] = $cyper;
+    $f            = json_encode($f);
+    file_put_contents($file, $f);
+}
 
 //Turn the power led off if desired
 if (getConfigValue('PROXY_LED') == 'ON') {

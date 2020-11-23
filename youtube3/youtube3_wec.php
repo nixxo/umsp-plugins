@@ -65,7 +65,7 @@ if ((defined('WECVERSION')) && (WECVERSION >= 3)) {
         'defaultval' => '300',
         'currentval' => '',
     );
-        
+
     $wec_options['PROXY_LED'] = array(
         'configname'   => 'PROXY_LED',
         'configdesc'   => 'Turn on the power LED when the proxy is active',
@@ -80,7 +80,7 @@ if ((defined('WECVERSION')) && (WECVERSION >= 3)) {
         'defaultval'   => 'OFF',
         'currentval'   => '',
     );
-        
+
     $wec_options['YOUTUBE_USERS'] = array(
         'configname' => 'YOUTUBE_USERS',
         'configdesc' => 'Youtube accounts you want listed in the home screen. Separate usernames by comma (,). No passwords are necessary',
@@ -130,5 +130,18 @@ if ((defined('WECVERSION')) && (WECVERSION >= 3)) {
         'page'       => WECP_UMSP,
         'defaultval' => '',
         'currentval' => '',
+    );
+
+    $wec_options['YOUTUBE_TEST_DOWNLOAD'] = array(
+        'configname'   => 'YOUTUBE_TEST_DOWNLOAD',
+        'configdesc'   => 'Test video before passing it to the media player to prevent 503 errors.',
+        'longdesc'     => 'Test video before passing it to the media player to prevent 503 errors.',
+        'group'        => $pluginInfo['name'],
+        'type'         => WECT_BOOL,
+        'page'         => WECP_UMSP,
+        'availval'     => array( 'OFF', 'ON' ),
+        'availvalname' => array(),
+        'defaultval'   => 'ON',
+        'currentval'   => '',
     );
 }
