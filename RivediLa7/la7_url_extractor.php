@@ -39,6 +39,25 @@ function clean_title($tit, $fix = true)
 
 function la7_programmi()
 {
+
+    $prog = array(
+        'Propaganda Live' => array(
+            '/propagandalive/rivedila7',
+            'https://www.la7.it/sites/default/files/property/tuttiiprogrammi/proplive_prog_1.jpg',
+        ),
+    );
+
+    foreach ($prog as $k => $v) {
+        $items[] = array(
+            'id'             => build_umsp_url('la7_programma', array( $v[0] )),
+            'dc:title'       => clean_title($k),
+            'upnp:album_art' => $v[1],
+            'upnp:class'     => 'object.container',
+        );
+    }
+    return $items;
+
+    // TODO
     $ff = file_get_contents(PROXY . urlencode(HOST . '/programmi'));
     if (preg_match_all('/href="(\/.{1,50})"\s*data-anchor="\w"><div class="image-bg lozad"\s*data-background-image="(.+?)"><\/div><div\s*class="titolo">(.+?)<\/div>/', $ff, $pg)) {
         $items = array();
@@ -64,23 +83,12 @@ function la7_programmi()
 function la7_programma($prog)
 {
     $ff = file_get_contents(PROXY . urlencode(HOST . $prog));
-    //categories
-    preg_match_all('/<li class="list-item.+?href="(.+?)">(.+?)<\/a><\/li>/', $ff, $cat);
-    $items = array();
-    for ($i = 0; $i < count($cat[0]); $i++) {
-        $items[] = array(
-            'id'         => build_umsp_url('la7_programma', array( $cat[1][$i] )),
-            'dc:title'   => clean_title($cat[2][$i]),
-            'upnp:class' => 'object.container',
-        );
-    }
-
     //video elements
-    preg_match_all('/<div class="item">\s*<a href="(.+?)"><div class="holder-bg"><div class="bg-img lozad" data-background-image="(.+?)">.+?<div class="title">(.+?)<\/div>/', $ff, $itms);
+    preg_match_all('/<a href="([^"]+?)"><div class="holder-bg.+?lozad" data-background-image="(.+?)">.+?<div class="title(_puntata)?">(.+?)<\/div>/', $ff, $itms);
     for ($i = 0; $i < count($itms[0]); $i++) {
         $items[] = create_play_item(
             build_server_url(array( 'video' => HOST . $itms[1][$i] )),
-            clean_title($itms[3][$i]),
+            clean_title($itms[4][$i]),
             "",
             'https:' . $itms[2][$i],
             'object.item.videoitem',
