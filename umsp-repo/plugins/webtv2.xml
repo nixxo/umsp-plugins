@@ -4,10 +4,10 @@
     <name>WebTV2</name>
     <desc>WebTV2 - Plays TV-translations from m3u-playlists</desc>
     <author>avkiev, nixxo</author>
-    <date>17.02.2015 - 04.04.2018 (nixxo)</date>
-    <version>1.4</version>
+    <date>17.02.2015 - 29.11.2020 (nixxo)</date>
+    <version>1.5</version>
     <type>umsp</type>
-    <url2>http://wdhd.ru/board/index.php?a=vtopic&amp;t=5223</url2>
+    <url>http://wdhd.ru/board/index.php?a=vtopic&amp;t=5223</url>
     <filename>webtv.php</filename>
     <basefirmware>*</basefirmware>
     <thumbnail>http://avkiev.16mb.com/wdtv/pic/webtv.jpg</thumbnail>
