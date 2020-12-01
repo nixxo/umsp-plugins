@@ -18,8 +18,6 @@ while (false !== ( $entry = $d->read() )) {
         if (ask($entry)) {
             //create tgz package
             $cmd = "7z a -ttar \"$out$entry.tar\" \"$current\" -xr!ftpsync.settings -xr!*_url_extractor.php";
-            var_dump($cmd);
-            exit;
             shell_exec($cmd);
 
             $cmd = "7z a \"$out$entry.tgz\" \"$out$entry.tar\"";
