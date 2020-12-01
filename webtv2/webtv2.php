@@ -1,8 +1,14 @@
 <?php
+include_once '/usr/share/umsp/funcs-log.php';
+global $logLevel;
+global $logIdent;
+$logIdent = 'WebTV';
+$logLevel = L_DEBUG;
+
 function _pluginMain($arg)
 {
-    _log("--- plugin start ---");
-    _log("$arg");
+    _logInfo("--- plugin start ---");
+    _logDebug("$arg");
     global $par, $adf;
     mb_internal_encoding("UTF-8");
     ini_set("user_agent", "Mozilla/5.0 (Windows NT 5.1; rv:35.0) Gecko/20100101 Firefox/35.0 WDLXTV");
@@ -34,13 +40,6 @@ function _pluginMain($arg)
             $ret[] = Container("list=$f", basename($f, ".m3u"));
         }
 
-        foreach (glob("/tmp/umsp-plugins/webtv2/plugins/*.php") as $f) {
-            include $f;
-            if ($par[$pluginInfo["id"]] != "OFF") {
-                $ret[] = @Container("plug=$f", $pluginInfo["name"], $pluginInfo["thumb"]);
-            }
-        }
-
         return $ret;
     }
 
@@ -59,7 +58,7 @@ function _pluginMain($arg)
     $s = str_replace("\r", "", $s);
     $p = '/EXTINF([^,]+),(.+)(\n|\n\n)(http[s]*:\/\/)(.+)(\n|\n\n)/iU';
     preg_match_all($p, $s, $m, PREG_SET_ORDER);
-    _log("loading playlist: $list");
+    _logDebug("loading playlist: $list");
     foreach ($m as $v) {
         $ext = trim($v[1]);
         $tit = trim($v[2]);
@@ -101,7 +100,7 @@ function PlayStream($url, $buf)
     }
 
     if (preg_match("/master\.m3u8/", $url)) {
-        _log("HLS detected");
+        _logInfo("HLS detected");
         return PlayM3U8_HLS($url, 1000000);
     }
     if (preg_match("/\.m3u8.+/", $url)) {
@@ -110,7 +109,7 @@ function PlayStream($url, $buf)
     if (substr($url, -4) == "m3u8") {
         return PlayM3U8($url, $buf);
     }
-    _log("play TS: $url");
+    _logInfo("play TS: $url");
 
     $purl = parse_url($url);
     $host = @$purl["host"];
@@ -131,7 +130,7 @@ function PlayStream($url, $buf)
 
     $f = fsockopen($host, $port, $errno, $errstr, 30);
     if (!$f) {
-        _log("PlayStream.fsockopen - $errstr ($errno)");
+        _logError("PlayStream.fsockopen - $errstr ($errno)");
         return;
     }
     $s  = "GET $path HTTP/1.1\r\n";
@@ -168,13 +167,13 @@ function PlayStream($url, $buf)
 function PlayM3U8_HLS($url, $buf)
 {
     preg_match('/#EXT-X-STREAM-INF:(.*)\n(.*)\n/', file_get_contents($url), $m);
-    _log("HLS url: $m[2]");
+    _logInfo("HLS url: $m[2]");
     return PlayM3U8($m[2], $buf);
 }
 
 function PlayM3U8($url, $buf)
 {
-    _log("M3U8 url: $url");
+    _logInfo("M3U8 url: $url");
     header("HTTP/1.1 200 OK");
     header("Expires: 0");
     header("Content-Type: video/mpeg");
@@ -192,7 +191,7 @@ function PlayM3U8($url, $buf)
         for ($i = 0; $i < $n; $i++) {
             $s = trim($m[2][$i]);
             if ($s == $pred || $s == $pred2) {
-                _log("continue");
+                _logDebug("continue");
                 continue;
             }
             $p = $s;
@@ -203,26 +202,26 @@ function PlayM3U8($url, $buf)
 
             preg_match("/\/([^\/]+?)(\?.+?)*$/", $p, $fn);
 
-            _log("* $p");
+            _logDebug("* $p");
             set_error_handler("error_handler");
             try {
                 $c = file_get_contents($p);
             } catch (Exception $e) {
-                _log("download failed.");
+                _logDebug("download failed.");
             }
             restore_error_handler();
 
             //$c = file_get_contents($p);
             //_log("#");
             if (!$c) {
-                _log("error on file get > $fn[1]");
+                _logDebug("error on file get > $fn[1]");
                 break;
             }
-            _log("$i/$n: $fn[1]");
+            _logDebug("$i/$n: $fn[1]");
             echo $c;
             $d = $tim - microtime(1);
             if ($d > 0) {
-                _log("sleep $d sec.");
+                _logDebug("sleep $d sec.");
                 usleep(1000000 * $d);
             }
             //_log("$i/$n: $fn[1]");
@@ -270,28 +269,6 @@ function Item($url, $tit, $thumb = "")
         "upnp:class"     => "object.item.videoItem",
         "protocolInfo"   => "http-get:*:*:*",
     );
-}
-
-function _log($s = "")
-{
-    if (is_array($s)) {
-        $s = print_r($s, 1);
-    }
-    //error_log("WebTV2: $s\n");
-    $fp = fopen("/tmp/umsp-log.txt", "a+");
-    //fwrite($fp, date('Y.m.d H:i:s') . " WebTV2: $s\n");
-    fwrite($fp, "WebTV2: $s\n");
-    fclose($fp);
-}
-
-function stf($d)
-{
-    ob_start();
-    var_dump($d);
-    $data = ob_get_clean();
-    $fp   = fopen("/tmp/umsp-log.txt", "a+");
-    fwrite($fp, $data);
-    fclose($fp);
 }
 
 function error_handler($severity, $message, $file, $line)
