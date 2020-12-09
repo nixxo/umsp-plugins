@@ -88,6 +88,7 @@ parse_str($_SERVER["QUERY_STRING"]);
 $url = urldecode($url);
 PlayStream($url, $buf);
 
+
 function PlayStream($url, $buf)
 {
     $url = urldecode($url);
@@ -99,6 +100,10 @@ function PlayStream($url, $buf)
         $buf = 1000000;
     }
 
+    if (preg_match("/\.mkv$/", $url)) {
+        _logInfo("File detected");
+        return PlayFile($url);
+    }
     if (preg_match("/master\.m3u8/", $url)) {
         _logInfo("HLS detected");
         return PlayM3U8_HLS($url, 1000000);
@@ -162,6 +167,150 @@ function PlayStream($url, $buf)
     fpassthru($f);
     set_time_limit(10);
     fclose($f);
+}
+
+function PlayFile($url)
+{
+    $head = get_headers($url, true);
+    $url  = $head['Location'];
+    _DownloadThru($url);
+}
+
+function parse_header($content)
+{
+    $newline = "\r\n";
+    $parts   = preg_split("/$newline . $newline/", $content);
+
+    $header  = array_shift($parts);
+    $content = implode($parts, $newline . $newline);
+
+    $parts = preg_split("/$newline/", $header);
+    foreach ($parts as $part) {
+        if (preg_match('/(.*)\: (.*)/', $part, $matches)) {
+            $headers[ $matches[1] ] = $matches[2];
+        }
+    }
+    _logDebug('parse_header -> returning $headers: ' . serialize($headers));
+    return $headers;
+}
+
+function _DownloadThru($url)
+{
+    foreach (array( ' ', "\t", "\n" ) as $char) {
+        $url = preg_replace("/$char/", urlencode($char), $url);
+    }
+
+    $parsedURL = parse_url($url);
+
+    $itemHost   = $parsedURL['host'];
+    $itemPath   = array_key_exists('path', $parsedURL) ? $parsedURL['path'] : '/';
+    $itemPort   = array_key_exists('port', $parsedURL) ? (int) $parsedURL['port'] : 80;
+    $itemScheme = array_key_exists('scheme', $parsedURL);
+    $itemPath  .= array_key_exists('query', $parsedURL) ? '?' . $parsedURL['query'] : '';
+
+    $itemPath = urldecode($itemPath);
+    _logDebug("_DownloadThrough -> calling _GetFile($itemHost, $itemPath, $itemPort)");
+    _GetFile($itemHost, $itemPath, $itemPort);
+}
+
+function _GetFile($prmHost, $prmPath, $prmPort, $numberOfTries = 0)
+{
+    $protocol = ( $prmPort == 80 ) ? '' : 'ssl://';
+    $protocol = '';
+    _logDebug("Using protocol $protocol and port $prmPort");
+    $fp = fsockopen($protocol . $prmHost, $prmPort, $errno, $errstr, 30);
+    if (!$fp) {
+        _logError("_GetFile -> $errstr ($errno)");
+        echo "$errstr ($errno)<br />\n";
+        system("sudo su -c 'echo \"_GetFile -> $errstr ($errno)\" >> /tmp/notice.osd'");
+    } else {
+        // prepare the header
+        $method = $_SERVER['REQUEST_METHOD']; //MediaPlayer knows what to request
+        $out    = "$method $prmPath HTTP/1.1\r\n";
+        $out   .= "Host: $prmHost\r\n";
+        $out   .= "Accept: */*\r\n";
+        if (isset($_SERVER['CONTENT_LENGTH'])) { //add content-length if the MediaPlayer specifies it
+            $out .= 'Content-Length: ' . $_SERVER['CONTENT_LENGTH'] . "\r\n";
+        }
+        if (isset($_SERVER['HTTP_RANGE'])) { //jump to the specific range if the MediaPlayer specifies it (when navigating)
+            $out .= 'Range: ' . $_SERVER['HTTP_RANGE'] . "\r\n";
+        }
+
+        $out .= "\r\n";
+
+        fwrite($fp, $out);
+        _logDebug("_GetFile -> Sent header $out");
+        $headerpassed  = false;
+        $response_text = '';
+
+        //HTTP/1.1 200 OK
+        //HTTP/1.1 302 Found
+        $http_code = '';
+
+        //read back the response
+        while ($headerpassed == false) {
+            $line = fgets($fp);
+            if ($line == "\r\n") {
+                $headerpassed = true;
+                //break the loop - we have the header
+            } elseif ($http_code == '') {
+                $http_code = $line;
+                //it's the first line the server sends back
+            } else {
+                $response_text .= $line;
+            } //save the rest of the lines in $response_text
+        }
+        _logDebug("_GetFile -> Received header $response_text");
+
+        //get an associative array of the response
+        $response = parse_header($response_text);
+
+        if ($response['Content-Type'] == 'video/x-matroska') {
+            $response['Content-Disposition'] = 'attachment; filename="video.mkv"';  //remember to ask it as an attachment
+        }
+        if ($response['Content-Type'] == 'video/x-flv') {
+            $response['Content-Disposition'] = 'attachment; filename="video.flv"';  //remember to ask it as an attachment
+        }
+        if ($response['Content-Type'] == 'video/mp4') {
+            $response['Content-Disposition'] = 'attachment; filename="video.mp4"';  //remember to ask it as an attachment
+        }
+
+        //I'm not getting the file - I'm getting redirected somewhere else
+        if ($http_code == "HTTP/1.1 302 Found\r\n" || $http_code == "HTTP/1.1 303 See Other\r\n") {
+            fclose($fp);
+            _logInfo('_GetFile -> Downloading through ' . $response['Location'] . ' because we received a HTTP 302 or 303');
+            _DownloadThru($response['Location']);  //repeat the download process
+        } elseif ($http_code == "HTTP/1.1 200 OK\r\n" || $http_code == "HTTP/1.1 206 Partial Content\r\n") {
+            //extra headers have been set above for video files and will be sent
+            foreach (array_keys($response) as $header) {
+                //do a redirect and re-read the file/url
+                _logInfo('_GetFile -> Received 200 or 206. Asking for the content with header ' . "$header: " . $response[ $header ]);
+                header("$header: " . $response[ $header ]);
+            }
+            _logInfo('_GetFile -> Flushing the socket and exiting...');
+            fpassthru($fp); //flush the socket and exit
+            exit;
+        } else {
+            //the HTTP code is not supported - send the headers anyway, so that MediaLogic won't hang (hopefully)
+            _logError("_GetFile -> HTTP code $http_code is not supported. Out: $out. Response Text: $response_text");
+            system("sudo su -c 'echo \"_GetFile -> HTTP code $http_code is not supported.\" >> /tmp/notice.osd'");
+
+            //re-request the video file - maybe we'll get a better response. Try this only a few times to prevent and enless loop
+            if ($numberOfTries < 2) {
+                fclose($fp);
+                _logDebug("_GetFile -> trying again ($numberOfTries)...");
+                _GetFile($prmHost, $prmPath, $prmPort, ( $numberOfTries + 1 ));
+            } else {
+                //give up
+                foreach (array_keys($response) as $header) {
+                    //do a redirect and re-read the file/url
+                    _logInfo("_GetFile -> Received $http_code - won't work. Asking for the content with header " . "$header: " . $response[ $header ]);
+                    header("$header: " . $response[ $header ]);
+                }
+                fclose($fp);
+            }
+        }
+    } //from else socket
 }
 
 function PlayM3U8_HLS($url, $buf)
