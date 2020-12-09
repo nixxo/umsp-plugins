@@ -301,15 +301,19 @@ function _getYTVideo($id)
     //end of added code.
 
     //new format string 2019-09
-    preg_match('/formats.*?:(\[(.+?)\])/', $html, $new_fmt);
+    preg_match('/"formats".*?:(\[(.+?)\])/', $html, $new_fmt);
     //old format url map: DEPRECATED???
     preg_match('/"url_encoded_fmt_stream_map":\s*"([^"]*)"/', $html, $fmt_url_map);
 
     if (isset($new_fmt[0])) {
         _logInfo('new url format');
         _logDebug('Matched formats: ' . $new_fmt[1]);
-        $new_fmt = stripslashes($new_fmt[1]);
-        $new_fmt = json_decode($new_fmt, true);
+        $new_fmt = json_decode($new_fmt[1], true);
+
+        if (!$new_fmt) {
+            _logError("Json decode error on new_fmt");
+            exit;
+        }
 
         foreach ($new_fmt as $nf) {
             if (isset($nf['cipher'])) {
