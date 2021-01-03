@@ -1,7 +1,24 @@
 <?php
+define("HOST", "https://www.raiplay.it");
+
+global $sections;
+$sections = array(
+    "Film"            => HOST . "/dl/doc/1528107032466_ico-film.svg",
+    "Fiction"         => HOST . "/dl/doc/1528106983569_ico-fiction.svg",
+    "Serie TV"        => "",
+    "Documentari"     => HOST . "/dl/doc/1528107054296_ico-documentari.svg",
+    "Bambini"         => HOST . "/dl/doc/1528806533924_ico-kids.svg",
+    "Teen"            => "",
+    "Learning"        => "",
+    "Programmi"       => HOST . "/dl/doc/1528106939639_ico-programmi.svg",
+    "Sport"           => "",
+    "Teche Rai"       => "",
+    "Musica e Teatro" => "",
+);
 
 function rai_main_menu()
 {
+    global $sections;
     _logDebug('main menu 20.03.04');
     $items    = array();
     $channels = array( "Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo" );
@@ -27,42 +44,14 @@ function rai_main_menu()
         );
     }
 
-    $sections = array(
-        "Programmi",
-        "Fiction",
-        "Film",
-        "Teatro",
-        "Documentari",
-        "Musica",
-        "Bambini e ragazzi",
-    );
-
-    $section_urls = array();
-
-    for ($i = 0; $i < count($sections); $i++) {
-        $section_urls[$i] = "https://www.raiplay.it/" . strtolower($sections[$i]) . "/?json";
-    }
-
-    $sections_logos = array(
-        "https://www.raiplay.it/dl/doc/1528106939639_ico-programmi.svg",
-        "https://www.raiplay.it/dl/doc/1528106983569_ico-fiction.svg",
-        "https://www.raiplay.it/dl/doc/1528107032466_ico-film.svg",
-        "https://www.raiplay.it/dl/doc/1528115315609_ico-teatro.svg",
-        "https://www.raiplay.it/dl/doc/1528107054296_ico-documentari.svg",
-        "https://www.raiplay.it/dl/doc/1528107079722_ico-musica.svg",
-        "https://www.raiplay.it/dl/doc/1528806533924_ico-kids.svg",
-    );
-
-    /*
-    for ($i = 0; $i < count($sections); $i++) {
+    foreach ($sections as $title => $logo) {
         $items[] = array(
-            'id' => build_umsp_url('rai_section', array($section_urls[$i])),
-            'dc:title' => $sections[$i],
-            'upnp:album_art' => $sections_logos[$i],
-            'upnp:class' => 'object.container',
+            'id'             => build_umsp_url('rai_play', array( to_url($title) )),
+            'dc:title'       => $title,
+            'upnp:album_art' => $logo,
+            'upnp:class'     => 'object.container',
         );
     }
-    */
 
     $items[] = array(
         'id'             => build_umsp_url('rai_config'),
@@ -146,121 +135,113 @@ function rai_channel($id)
     return $items;
 }
 
-function rai_section($id)
+function to_url($id)
 {
-    _logDebug("section $id");
-    $items = array();
-
-    $itm_type = array(
-        "Rai Lancio Item"                             => "rai_section",
-        "PLR programma configuratore palinsesto Item" => "rai_program",
-    );
-
-    $f = file_get_contents($id);
-    $j = json_decode($f);
-    $j = $j->{'blocchi'}[0]->{'lanci'};
-
-    for ($i = 0; $i < count($j); $i++) {
-        $tmp     = preg_replace("/^\/(raiplay|dl)/", "https://www.raiplay.it/$1", $j[$i]->{'PathID'});
-        $items[] = array(
-            'id'             => build_umsp_url($itm_type[$j[$i]->{'original-type'}], array( $tmp )),
-            //'id' => build_umsp_url('rai_section', array($tmp)),
-            'dc:title'       => $j[$i]->{'name'},
-            'upnp:album_art' => str_replace("[RESOLUTION]", "480x480", $j[$i]->{'images'}->{'landscape'}),
-            'upnp:class'     => 'object.container',
-        );
-    }
-
-    return $items;
-    exit;
+    $id = strtolower($id);
+    $id = str_replace(' e ', '-e-', $id);
+    $id = str_replace(' ', '', $id);
+    return HOST . "/$id/index.json";
 }
 
-function rai_sub_section($id)
+function rai_play($url, $level = null)
 {
-    _logDebug("sub section $id");
-    $items = array();
-
-    //old: implementation based on the web page [DEPRECATED]
-    $f = file_get_contents($id);
-
-    preg_match_all("/<div class=\"titolo\">\s*(.+?)\s*<\/div>/", $f, $tit);
-    preg_match_all("/<div\s*class=\"useraction\"\s*data-path=\"(.+?)\"/", $f, $ul);
-    preg_match_all("/\[([^\s]+?)\, medium\]/", $f, $art);
-
-    $tit = $tit[1];
-    $ul  = preg_replace("/^\/(raiplay|programmi)/", "https://www.raiplay.it/$1", $ul[1]);
-    $art = preg_replace("/^\/\//", "https://", $art[1]);
-
-    for ($i = 0; $i < count($tit); $i++) {
-        $items[] = array(
-            'id'             => build_umsp_url('rai_program', array( $ul[$i] )),
-            'dc:title'       => $tit[$i],
-            'upnp:album_art' => $art[$i],
-            'upnp:class'     => 'object.container',
-        );
-    }
-
-    return $items;
-}
-
-function rai_program($id)
-{
-    $id = preg_match("/^\/r/", $id) ? "http://www.raiplay.it" . $id : $id;
-    _logDebug("program $id");
-    $items = array();
-
-    $f = file_get_contents($id);
-    //_logDebug(print_r($f, true));
-
+    _logDebug($url);
+    $f = file_get_contents($url);
     $j = json_decode($f, true);
-    if (isset($j['Blocks'])) {
-        _logDebug("BLOCKS");
-        //_logDebug(print_r($j['Blocks'], true));
-        foreach ($j['Blocks'] as $bb) {
-            foreach ($bb['Sets'] as $b) {
-                $tt      = $bb['Name'] == $b['Name'] ? $bb['Name'] : $bb['Name'] . ' - ' . $b['Name'];
-                $tt      = strpos($tt, $j['Name']) ? $tt : $j['Name'] . " " . $tt;
-                $items[] = array(
-                    'id'             => build_umsp_url('rai_program', array( $b['url'] )),
-                    'dc:title'       => $tt,
-                    'upnp:album_art' => '',
-                    'upnp:class'     => 'object.container',
-                );
-            }
-        }
-        if (count($items) == 1) {
-            _logDebug("auto enter");
-            return rai_program($j['Blocks'][0]['Sets'][0]['url']);
-        }
-    } elseif (isset($j['items'])) {
-        _logDebug("ITEMS");
-        //_logDebug(print_r($j['items'][0], true));
-        foreach ($j['items'] as $b) {
-            if ($b['type'] == 'RaiTv Media Video Item') {
-                $tt      = isset($b['titoloEpisodio']) ? $b['titoloEpisodio'] : $b['name'];
-                $tt      = $tt ? $tt : $b['name'];
-                $items[] = createPlayItem(
-                    build_server_url(array( 'video_page' => $b['pathID'] )),
-                    //$b['titoloEpisodio'] ? $b['titoloEpisodio'] : $b['nomeProgramma'],
-                    $tt,
-                    $b['subtitle'],
-                    str_replace("[RESOLUTION]", "480x480", $b['images']['landscape']),
-                    'object.item.videoitem',
-                    'http-get:*:video/mp4:*'
-                );
-            }
-        }
-    } else {
-        $items[] = array(
-            'id'             => build_umsp_url('rai_program', array()),
-            'dc:title'       => '- ERRORE -',
-            'upnp:album_art' => '',
-            'upnp:class'     => 'object.container',
-        );
-    }
 
+    $generale = $programma = $episodi = false;
+    //generale
+    if ($generale = isset($j['contents'])) {
+        $j = $level === null ? $j['contents'] : $j['contents'][$level];
+        $j = isset($j['contents']) ? $j['contents'] : $j;
+    //programma
+    } elseif ($programma = isset($j['blocks'])) {
+        $j = $level === null ? $j['blocks'] : $j['blocks'][$level]['sets'];
+    //episodi
+    } elseif ($episodi = isset($j['items'])) {
+        $j = $j['items'];
+    }
+    foreach ($j as $k => $elm) {
+        $video = $elm["type"] == 'RaiPlay Video Item' ? true : false;
+
+
+        if ($generale && !$video) {
+            //skip if element is empty
+            if (count($elm) == 0) {
+                continue;
+            }
+
+            if ($level === null) {
+                $ua[] = $url;
+                $ua[] = $k;
+            } else {
+                $ua[] = HOST . $elm['path_id'];
+            }
+            $title = isset($elm['name']) ? $elm['name'] : $k;
+        } elseif ($programma && !$video) {
+            if (isset($elm['sets'])) {
+                if (count($elm['sets']) == 1) {
+                    $ua[] = HOST . $elm['sets'][0]['path_id'];
+                } else {
+                    $ua[] = $url;
+                    $ua[] = $k;
+                }
+            } else {
+                $ua[] = HOST . $elm['path_id'];
+            }
+            $title = $elm['name'];
+        } elseif ($episodi || $video) {
+            $ua       = $elm['video_url'];
+            $season   = isset($elm['season']) ? $elm['season'] : 0;
+            $episode  = isset($elm['episode']) ? $elm['episode'] : 0;
+            $eps      = sprintf("%1$01dx%2$02d", $season, $episode);
+            $ep_title = isset($elm['episode_title']) ? $elm['episode_title'] : $elm['name'];
+            $title    = preg_match("/^\dx\d\d$/", $eps) ? "$eps - $ep_title" : $ep_title;
+            //title cleanup
+            $title = str_replace('0x00 - ', '', $title);
+            $title = preg_replace("/^0x/", 'Ep.', $title);
+            $title = preg_replace("/[\s-]+E\d+$/", '', $title);
+
+            $desc  = isset($elm['description']) ? $elm['description'] : $elm['subtitle'];
+            $thumb = HOST . $elm['images']['landscape'];
+        }
+
+        if (isset($elm['rights_management']['rights']['drm']['VOD']) &&
+            $elm['rights_management']['rights']['drm']['VOD'] == true) {
+            $title = "[DRM] $title";
+        }
+
+        if (($generale || $programma) && !$video) {
+            $items[] = array(
+                'id'         => build_umsp_url('rai_play', $ua),
+                'dc:title'   => htmlspecialchars($title),
+                'upnp:class' => 'object.container',
+                'chk'        => serialize($ua),
+            );
+        }
+        if ($episodi || $video) {
+            $items[] = createPlayItem(
+                build_server_url(array( 'video_page' => $ua )),
+                $title,
+                $desc,
+                $thumb,
+                'object.item.videoitem',
+                'http-get:*:video/mp4:*'
+            );
+        }
+        unset($ua);
+    }
+    //if only 1 item auto-enter
+    if (count($items) == 1 && $programma) {
+        if (isset($items[0]['chk'])) {
+            $dat = unserialize($items[0]['chk']);
+            $url = $dat[0];
+            $lev = isset($dat[1]) ? $dat[1] : null;
+            _logDebug("auto-enter $url $lev");
+            return rai_play($url, $lev);
+        }
+    }
     return $items;
-    exit;
 }
 
 function rai_day($ch, $day)
