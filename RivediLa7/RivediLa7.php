@@ -11,7 +11,8 @@ if ($dev) {
     include_once 'la7_url_extractor.php';
 } else {
     $logLevel = L_WARNING;
-    $f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RivediLa7/la7_url_extractor.php');
+    //$f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RivediLa7/la7_url_extractor.php');
+    $f = file_get_contents('https://nixxo.altervista.org/file.php?url=' . urlencode('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/RivediLa7/la7_url_extractor.php'));
     file_put_contents('/tmp/RivediLa7-temp.php', $f);
     include_once '/tmp/RivediLa7-temp.php';
 }

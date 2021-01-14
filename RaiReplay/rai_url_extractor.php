@@ -1,4 +1,5 @@
 <?php
+define("VERSION", "21.01.04");
 define("HOST", "https://www.raiplay.it");
 
 global $sections;
@@ -19,7 +20,7 @@ $sections = array(
 function rai_main_menu()
 {
     global $sections;
-    _logDebug('main menu 20.03.04');
+    _logDebug('main menu ' . VERSION);
     $items    = array();
     $channels = array( "Rai1", "Rai2", "Rai3", "Rai4", "Rai5", "RaiNews24", "RaiMovie", "RaiPremium", "RaiGulp", "RaiYoyo" );
     $logos    = array(
@@ -143,6 +144,16 @@ function to_url($id)
     return HOST . "/$id/index.json";
 }
 
+function get_video_json($path)
+{
+    $f = file_get_contents($path);
+    $j = json_decode($f, true);
+    if (isset($j['first_item_path'])) {
+        return get_video_json(HOST . $j['first_item_path']);
+    }
+    return $j;
+}
+
 function rai_play($url, $level = null)
 {
     _logDebug($url);
@@ -161,9 +172,11 @@ function rai_play($url, $level = null)
     } elseif ($episodi = isset($j['items'])) {
         $j = $j['items'];
     }
-    foreach ($j as $k => $elm) {
-        $video = $elm["type"] == 'RaiPlay Video Item' ? true : false;
 
+    //"RaiPlay Slider Block"  contents
+
+    foreach ($j as $k => $elm) {
+        $video = (isset($elm["type"]) && $elm["type"] == 'RaiPlay Video Item') ? true : false;
 
         if ($generale && !$video) {
             //skip if element is empty
@@ -175,10 +188,16 @@ function rai_play($url, $level = null)
                 $ua[] = $url;
                 $ua[] = $k;
             } else {
-                $ua[] = HOST . $elm['path_id'];
+                if (isset($elm["layout"]) && $elm["layout"] == "single") {
+                    $elm   = get_video_json(HOST . $elm['path_id']);
+                    $video = true;
+                } else {
+                    $ua[] = HOST . $elm['path_id'];
+                }
             }
             $title = isset($elm['name']) ? $elm['name'] : $k;
-        } elseif ($programma && !$video) {
+        }
+        if ($programma && !$video) {
             if (isset($elm['sets'])) {
                 if (count($elm['sets']) == 1) {
                     $ua[] = HOST . $elm['sets'][0]['path_id'];
@@ -190,12 +209,14 @@ function rai_play($url, $level = null)
                 $ua[] = HOST . $elm['path_id'];
             }
             $title = $elm['name'];
-        } elseif ($episodi || $video) {
-            $ua       = $elm['video_url'];
+        }
+        if ($episodi || $video) {
+            $ua       = isset($elm['video_url']) ? $elm['video_url'] : $elm['video']["content_url"];
             $season   = isset($elm['season']) ? $elm['season'] : 0;
             $episode  = isset($elm['episode']) ? $elm['episode'] : 0;
             $eps      = sprintf("%1$01dx%2$02d", $season, $episode);
             $ep_title = isset($elm['episode_title']) ? $elm['episode_title'] : $elm['name'];
+            $ep_title = $ep_title ? $ep_title : $elm['name'];
             $title    = preg_match("/^\dx\d\d$/", $eps) ? "$eps - $ep_title" : $ep_title;
             //title cleanup
             $title = str_replace('0x00 - ', '', $title);
@@ -222,7 +243,7 @@ function rai_play($url, $level = null)
         if ($episodi || $video) {
             $items[] = createPlayItem(
                 build_server_url(array( 'video_page' => $ua )),
-                $title,
+                htmlspecialchars($title),
                 $desc,
                 $thumb,
                 'object.item.videoitem',
@@ -251,7 +272,6 @@ function rai_day($ch, $day)
 
     _logDebug(">> $ch > $day");
     $items = array();
-    //old $ff = file_get_contents("https://www.raiplay.it/guidatv/index.html?canale=$ch&giorno=$day&new");
 
     $ff = file_get_contents("https://www.raiplay.it/palinsesto/guidatv/lista/$ch/$day.html");
     if (preg_match_all("/<li[\w\W]+?<\/li>/", $ff, $lis)) {

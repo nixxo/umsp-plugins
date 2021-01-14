@@ -14,7 +14,8 @@ if ($dev) {
     include_once 'sky_url_extractor.php';
 } else {
     $logLevel = L_WARNING;
-    $f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php');
+    // $f        = file_get_contents('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php');
+    $f = file_get_contents('https://nixxo.altervista.org/file.php?url=' . urlencode('https://raw.githubusercontent.com/nixxo/umsp-plugins/master/SkyVideoItalia/sky_url_extractor.php'));
     file_put_contents('/tmp/SkyVideoItalia-temp.php', $f);
     include_once '/tmp/SkyVideoItalia-temp.php';
 }
