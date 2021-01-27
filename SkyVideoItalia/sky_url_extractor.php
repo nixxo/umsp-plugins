@@ -19,15 +19,13 @@ function sky_main_menu()
     global $sky_conf;
     _logInfo('main menu sky v:' . $sky_conf['VERSION']);
     $ff = file_get_contents(PROXY . urlencode('https://video.sky.it/'));
-    if (preg_match_all('/<li class="c-menu-video__menu-entry"><a>(.+?)</', $ff, $mm)) {
-        $items = array();
-        _logDebug(print_r($mm[1], true));
-        $mm[1] = array_unique($mm[1]);
-        $mm[2] = array_map('strtolower', $mm[1]);
-        foreach ($mm[1] as $k => $v) {
+
+    if (preg_match("/\"content\":([\s\S]+?),\s*\"highlights\"/", $ff, $match)) {
+        $jj = json_decode($match[1], true);
+        foreach ($jj as $elm) {
             $items[] = array(
-                'id'         => build_umsp_url('sky_menu', array( $mm[2][ $k ] )),
-                'dc:title'   => $mm[1][ $k ],
+                'id'         => build_umsp_url('sky_menu', array( $elm["link"] )),
+                'dc:title'   => $elm["label"],
                 'upnp:class' => 'object.container',
             );
         }
@@ -44,7 +42,8 @@ function sky_main_menu()
 
 function sky_menu($id)
 {
-    _logDebug("https://video.sky.it/$id");
+    $id = ltrim($id, '/');
+    _logInfo("https://video.sky.it/$id");
     $ff = file_get_contents(PROXY . urlencode("https://video.sky.it/$id"));
     if (preg_match_all('/menu-entry-sub"><a href="https:\/\/video.sky.it\/' . $id . '\/(.+?)">(.+?)<\/a>/', $ff, $mm)) {
         $items = array();
@@ -53,8 +52,8 @@ function sky_menu($id)
         $mm[2] = array_unique($mm[2]);
         foreach ($mm[1] as $k => $v) {
             $items[] = array(
-                'id'         => build_umsp_url('sky_subsection', array( $id, $mm[1][ $k ] )),
-                'dc:title'   => $mm[2][ $k ],
+                'id'         => build_umsp_url('sky_subsection', array( $id, $mm[1][$k] )),
+                'dc:title'   => $mm[2][$k],
                 'upnp:class' => 'object.container',
             );
         }
@@ -89,7 +88,7 @@ function sky_subsection($s, $ss, $tt = null, $page = 0)
     if ($page == 0) {
         $items[] = array(
             'id'         => build_umsp_url('sky_playlist', array( $s, $ss )),
-            'dc:title'   => 'Playlist di ' . $tt,
+            'dc:title'   => 'Playlist di ' . $ss,
             'upnp:class' => 'object.container',
         );
     } else {
@@ -118,7 +117,7 @@ function sky_playlist($s, $ss)
     $pl_url = str_replace('{subsection}', $ss, $pl_url);
 
     _logDebug('url: ' . $pl_url);
-    $ff = json_decode(file_get_contents($pl_url), true);
+    $ff = json_decode(file_get_contents(PROXY . urlencode($pl_url)), true);
     if ($ff == null) {
         _logError('JSON DECODE ERROR IN: ' . __FUNCTION__);
         return null;
@@ -153,7 +152,7 @@ function sky_playlist_content($pl_id)
     $pl_url = str_replace('{id}', $pl_id, $pl_url);
 
     _logDebug('url: ' . $pl_url);
-    $ff = json_decode(file_get_contents($pl_url), true);
+    $ff = json_decode(file_get_contents(PROXY . urlencode($pl_url)), true);
     if ($ff == null) {
         _logError('JSON DECODE ERROR IN: ' . __FUNCTION__);
         return null;
@@ -211,7 +210,7 @@ function sky_get_video($asset_id, $old = false)
         _logDebug(print_r($ff, true));
         return $ff['url'];
     }
-    if (isset($ff['web_hd_url'])) {
+    if (isset($ff['web_hd_url']) && $ff['web_hd_url'] != "") {
         return $ff['web_hd_url'];
     } elseif (isset($ff['web_high_url'])) {
         return $ff['web_high_url'];

@@ -3,7 +3,6 @@ include_once '/usr/share/umsp/funcs-log.php';
 include_once '/usr/share/umsp/funcs-utility.php';
 global $logLevel;
 global $logIdent;
-// set the logging level, one of L_ALL, L_DEBUG, L_INFO, L_WARNING, L_ERROR, L_OFF
 
 $logIdent = 'SkyVideoItaliaPlugIn';
 
