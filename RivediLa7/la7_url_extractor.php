@@ -4,7 +4,7 @@ define('HOST', 'https://www.la7.it');
 
 function la7_main_menu()
 {
-    _logDebug('main menu 20.11.16');
+    _logDebug('main menu 21.02.11');
     $ff = file_get_contents(PROXY . urlencode(HOST . '/rivedila7'));
     if (preg_match_all('/<a href="\/rivedila7\/(\d)\/LA7">\s*<div class="giorno-text">\s*(\w+?)<\/div>\s*<div class="giorno-numero">\s*(\d+?)<\/div>\s*<div class="giorno-mese">\s*(\w+?)<\/div>\s*<\/a>/', $ff, $m)) {
         $days_name   = array_reverse($m[2]);
@@ -119,13 +119,13 @@ function la7_day($id)
             // durata
             preg_match('/<div class="durata">\s*(\d+):(\d+):(\d+)<\/div>/', $p, $dr);
             // titolo + descrizione
-            preg_match('/<h2>\s*(.+?)\s*<\/h2>\s*<\/div>\s*<div class="occhiello">\s*(.+?)\s*<\/div>/', $p, $ds);
+            preg_match('/<h2>\s*(.+?)\s*<\/h2>\s*<\/div>\s*<div class="occhiello">\s*(.*?)\s*<\/div>/', $p, $ds);
 
             if ($orario && $th && $video && $dr && $ds) {
                 $items[] = create_play_item(
                     build_server_url(array( 'video' => $video[1] )),
                     clean_title($orario[1] . ' - ' . $ds[1] . ' [' . ( $dr[1] != '00' ? $dr[1] . ':' : '' ) . $dr[2] . ':' . $dr[3] . ']'),
-                    $ds[2],
+                    htmlspecialchars($ds[2]),
                     'https:' . $th[1],
                     'object.item.videoitem',
                     'http-get:*:video/mp4:*'
