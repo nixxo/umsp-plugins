@@ -141,7 +141,7 @@ function to_url($id)
     $id = strtolower($id);
     $id = str_replace(' e ', '-e-', $id);
     $id = str_replace(' ', '', $id);
-    return HOST . "/$id/index.json";
+    return HOST . "/tipologia/$id/index.json";
 }
 
 function get_video_json($path)
