@@ -238,37 +238,18 @@ function _getYTVideo($id)
 
     //code added by nixxo:
     //check and bypass age restriction if found
-    if (preg_match('/player-age-gate-content">/', $html)) {
+    if (preg_match("/\"status\":\"LOGIN_REQUIRED\",\"reason\":\"Accedi per confermare la tua età\.\"/", $html)
+        or preg_match("/\"status\":\"LOGIN_REQUIRED\",\"reason\":\"Sign in to confirm your age\"/", $html)
+        or preg_match('/player-age-gate-content">/', $html)) {
         _logInfo('Age-gate detected.');
-        //load the embed page
-        $html = file_get_contents("http://www.youtube.com/embed/$id");
-        $sts  = '';
-        if (preg_match('/"sts"\s*:\s*(\d+?),/', $html, $sts)) {
-            $sts = $sts[1];
-            _logDebug("STS: $sts");
-        } else {
-            _logError('Age-gate bypass: STS not found.');
-        }
         //get fmt_map from another page
-        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&eurl=https://youtube.googleapis.com/v/$id" . $sts);
-        //new url format
+        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&eurl=https://youtube.googleapis.com/v/$id")
+        ;        //new url format
         if (preg_match('/"formats":\[.+?\]/', urldecode($fmt_page), $ff)) {
             _logInfo('Added formats from age-gated page.');
             $html .= addslashes($ff[0]);
+            $html .= $ff[0];
             //old url format: DEPRECATED???
-        } elseif (preg_match('/url_encoded_fmt_stream_map=([^"]*?)&/', $fmt_page, $ff)) {
-            $ff = urldecode($ff[1]);
-            //extract url and itag to create a clean fmt_map
-            preg_match_all('/url=([^&]+?)(&|$)/', $ff, $ur);
-            preg_match_all('/itag=(\d+)/', $ff, $it);
-            preg_match_all('/(&|^)s=(\S+?)(&|$)/', $ff, $sig);
-            $ff = '';
-            for ($i = 0; $i < count($ur[1]); $i++) {
-                $s   = isset($sig[2][ $i ]) ? "\u0026s=" . $sig[2][ $i ] : '';
-                $ff .= 'itag=' . $it[1][ $i ] . '&url=' . $ur[1][ $i ] . $s . ',';
-            }
-            //append the format map to the html page so I don't have to change other code below
-            $html .= "\"url_encoded_fmt_stream_map\":\"$ff\"";
         } else {
             _logError('Age-gate bypass: Fmt_map not found.');
             _logDebug($fmt_page);
@@ -302,8 +283,6 @@ function _getYTVideo($id)
 
     //new format string 2019-09
     preg_match('/"formats".*?:(\[(.+?)\])/', $html, $new_fmt);
-    //old format url map: DEPRECATED???
-    preg_match('/"url_encoded_fmt_stream_map":\s*"([^"]*)"/', $html, $fmt_url_map);
 
     if (isset($new_fmt[0])) {
         _logInfo('new url format');
@@ -345,50 +324,6 @@ function _getYTVideo($id)
                 _logWarning('Url not found:');
                 _logWarning(print_r($nf, true));
             }
-        }
-    } elseif (isset($fmt_url_map[1])) {
-        _logDebug('Matched url_encoded_fmt_stream_map: ' . $fmt_url_map[1]);
-        foreach (explode(',', $fmt_url_map[1]) as $var_fmt_url_map) {
-            _logDebug("var_fmt_url_map: $var_fmt_url_map");
-            //get the quality and the url
-            //do the match in several steps, to be more robust
-            $itag = 0;
-            $url  = 0;
-            $sig  = '';
-            if (preg_match('/itag=(?P<itag>\d+)/', urldecode($var_fmt_url_map), $result)) {
-                $itag = $result['itag'];
-            }
-            if (preg_match('/(?:.u0026)?url=(?P<url>.*?)(?:.u0026|$)/', urldecode($var_fmt_url_map), $result)) {
-                $url = $result['url'];
-            }
-            if (preg_match('/(?:.u0026)?sig=(?P<sig>.*?)(?:.u0026|$)/', urldecode($var_fmt_url_map), $result)) {
-                //regular signature videos
-                    //$sig = $result['sig'];
-                    //$url.="&signature=".$sig;
-                    //$useYTDL=1;
-                    //break;
-            }
-            if (preg_match('/(?:.u0026|^)s=(?P<sig>.*?)(?:.u0026|$)/', urldecode($var_fmt_url_map), $result)) {
-                //special signature for VEVO clips and other protected content
-                /*
-                $sig = $result['sig'];
-                $decryptedSignature = decryptSignature($sig);
-                _logDebug("Converted signature $sig to $decryptedSignature");
-                $url.="&signature=".$decryptedSignature;
-                */
-                //decode the signature
-                if ($ytCipher) {
-                    _logDebug('enc_sig: ' . $result['sig']);
-                    $sig = ytDecodeSignature($ytCipher, $result['sig']);
-                    _logDebug('dec_sig: ' . $sig);
-                } else {
-                    $useYTDL = 1;
-                    break;
-                }
-            }
-            //add signature if present
-            $hash_qlty_url[ $itag ] = $sig ? $url . '&sig=' . $sig : $url;
-            _logDebug('_getYTVideo -> Quality ' . $itag . ' is available and has URL ' . $url);
         }
     } else {
         _logError('Unable to find url_encoded_fmt_stream_map! There are changes on the Youtube side!');
