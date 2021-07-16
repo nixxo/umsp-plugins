@@ -243,13 +243,11 @@ function _getYTVideo($id)
         or preg_match('/player-age-gate-content">/', $html)) {
         _logInfo('Age-gate detected.');
         //get fmt_map from another page
-        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&eurl=https://youtube.googleapis.com/v/$id")
-        ;        //new url format
+        $fmt_page = file_get_contents("https://www.youtube.com/get_video_info?video_id=$id&eurl=https://youtube.googleapis.com/v/$id&html5=1&c=TVHTML5&cver=6.20180913");
         if (preg_match('/"formats":\[.+?\]/', urldecode($fmt_page), $ff)) {
             _logInfo('Added formats from age-gated page.');
             $html .= addslashes($ff[0]);
             $html .= $ff[0];
-            //old url format: DEPRECATED???
         } else {
             _logError('Age-gate bypass: Fmt_map not found.');
             _logDebug($fmt_page);
