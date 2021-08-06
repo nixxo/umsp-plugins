@@ -79,8 +79,8 @@
     <name>Youtube3</name>
     <desc>Youtube client based on Youtube APIv3</desc>
     <author>mad_ady/nixxo</author>
-    <date>2021-07-16</date>
-    <version>0.7.13</version>
+    <date>2021-08-06</date>
+    <version>0.7.14</version>
     <type>umsp</type>
     <url>http://forum.wdlxtv.com/viewtopic.php?f=53&amp;t=9230</url>
     <filename>youtube3.php</filename>
